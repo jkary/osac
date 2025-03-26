@@ -12,3 +12,18 @@ jobs:
       with:
         python-version: "3.13"
     - uses: pre-commit/action@v3.0.1
+      with:
+        extra_args: -c .pre-commit-config-ci.yaml
+
+  golangci-lint:
+    name: lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: stable
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v7
+        with:
+          version: v2.0
