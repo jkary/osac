@@ -42,11 +42,30 @@ spec:
               templateID:
                 description: TemplateID is the unique identigier of the cluster template
                   to use when creating this cluster
+                pattern: ^[a-z][-a-z0-9]*[a-z0-9]$
                 type: string
+            required:
+            - templateID
             type: object
           status:
             description: ClusterOrderStatus defines the observed state of ClusterOrder
             properties:
+              clusterReference:
+                description: Reference to the namespace that contains the HostedCluster
+                  resource
+                properties:
+                  hostedClusterName:
+                    type: string
+                  namespace:
+                    description: Namespace that contains the HostedCluster resource
+                    type: string
+                  serviceAccountName:
+                    type: string
+                required:
+                - hostedClusterName
+                - namespace
+                - serviceAccountName
+                type: object
               conditions:
                 description: Conditions holds an array of metav1.Condition that describe
                   the state of the ClusterOrder
@@ -108,6 +127,12 @@ spec:
               phase:
                 description: Phase provides a single-value overview of the state of
                   the ClusterOrder
+                enum:
+                - Unknown
+                - Accepted
+                - Progressing
+                - Failed
+                - Ready
                 type: string
             type: object
         type: object
