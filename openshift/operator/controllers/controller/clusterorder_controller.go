@@ -20,6 +20,7 @@ package controller
 import (
 	"context"
 
+	hypershiftv1beta1 "github.com/openshift/hypershift/api/hypershift/v1beta1"
 	corev1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -34,11 +35,11 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
-	cloudkitv1alpha1 "github.com/innabox/cloudkit-operator/api/v1alpha1"
+	"github.com/innabox/cloudkit-operator/api/v1alpha1"
 )
 
 // NewComponentFn is the type of a function that creates a required component
-type NewComponentFn func(context.Context, *cloudkitv1alpha1.ClusterOrder) (*appResource, error)
+type NewComponentFn func(context.Context, *v1alpha1.ClusterOrder) (*appResource, error)
 
 type appResource struct {
 	object      client.Object
@@ -62,11 +63,13 @@ func (r *ClusterOrderReconciler) components() []component {
 // ClusterOrderReconciler reconciles a ClusterOrder object
 type ClusterOrderReconciler struct {
 	client.Client
-	Scheme *runtime.Scheme
+	Scheme               *runtime.Scheme
+	CreateClusterWebhook string
+	DeleteClusterWebhook string
 }
 
-func newClusterReference() *cloudkitv1alpha1.ClusterOrderClusterReferenceType {
-	return &cloudkitv1alpha1.ClusterOrderClusterReferenceType{}
+func newClusterReference() *v1alpha1.ClusterOrderClusterReferenceType {
+	return &v1alpha1.ClusterOrderClusterReferenceType{}
 }
 
 // +kubebuilder:rbac:groups=cloudkit.openshift.io,resources=clusterorders,verbs=get;list;watch;create;update;patch;delete
@@ -80,7 +83,7 @@ func newClusterReference() *cloudkitv1alpha1.ClusterOrderClusterReferenceType {
 func (r *ClusterOrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	_ = ctrllog.FromContext(ctx)
 
-	instance := &cloudkitv1alpha1.ClusterOrder{}
+	instance := &v1alpha1.ClusterOrder{}
 	err := r.Client.Get(ctx, req.NamespacedName, instance)
 	if err != nil {
 		return ctrl.Result{}, client.IgnoreNotFound(err)
@@ -105,7 +108,7 @@ func (r *ClusterOrderReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	}
 
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&cloudkitv1alpha1.ClusterOrder{}).
+		For(&v1alpha1.ClusterOrder{}).
 		Watches(
 			&corev1.Namespace{},
 			handler.EnqueueRequestsFromMapFunc(r.mapObjectToCluster),
@@ -118,6 +121,11 @@ func (r *ClusterOrderReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		).
 		Watches(
 			&rbacv1.RoleBinding{},
+			handler.EnqueueRequestsFromMapFunc(r.mapObjectToCluster),
+			builder.WithPredicates(labelPredicate),
+		).
+		Watches(
+			&hypershiftv1beta1.HostedCluster{},
 			handler.EnqueueRequestsFromMapFunc(r.mapObjectToCluster),
 			builder.WithPredicates(labelPredicate),
 		).
@@ -149,7 +157,7 @@ func (r *ClusterOrderReconciler) mapObjectToCluster(ctx context.Context, obj cli
 	}
 }
 
-func (r *ClusterOrderReconciler) handleUpdate(ctx context.Context, _ ctrl.Request, instance *cloudkitv1alpha1.ClusterOrder) (ctrl.Result, error) {
+func (r *ClusterOrderReconciler) handleUpdate(ctx context.Context, _ ctrl.Request, instance *v1alpha1.ClusterOrder) (ctrl.Result, error) {
 	log := ctrllog.FromContext(ctx)
 	log.Info("Create or update " + instance.GetName())
 
@@ -219,37 +227,92 @@ func (r *ClusterOrderReconciler) handleUpdate(ctx context.Context, _ ctrl.Reques
 		log.Info("Deleted " + component.name)
 	}
 
-	return ctrl.Result{}, nil
-}
-
-func (r *ClusterOrderReconciler) handleDelete(ctx context.Context, _ ctrl.Request, instance *cloudkitv1alpha1.ClusterOrder) (ctrl.Result, error) {
-	log := ctrllog.FromContext(ctx)
-	log.Info("Delete " + instance.GetName())
-
-	if controllerutil.ContainsFinalizer(instance, cloudkitFinalizer) {
-		labelSelector := client.MatchingLabels{cloudkitClusterOrderNameLabel: instance.GetName()}
-
-		var namespaceList corev1.NamespaceList
-		if err := r.List(ctx, &namespaceList, labelSelector); err != nil {
-			log.Error(err, "Failed to list Namespaces")
+	if url := r.CreateClusterWebhook; url != "" {
+		if err := triggerWebHook(ctx, url, instance); err != nil {
+			log.Error(err, "Failed to trigger webhook")
 			return ctrl.Result{}, err
-		}
-
-		if len(namespaceList.Items) == 0 {
-			controllerutil.RemoveFinalizer(instance, cloudkitFinalizer)
-			if err := r.Update(ctx, instance); err != nil {
-				return ctrl.Result{}, err
-			}
-			return ctrl.Result{}, nil
-		}
-
-		for _, ns := range namespaceList.Items {
-			if err := r.Client.Delete(ctx, &ns); err != nil {
-				log.Error(err, "Failed to delete namespace "+ns.GetName())
-				return ctrl.Result{}, err
-			}
 		}
 	}
 
 	return ctrl.Result{}, nil
+}
+
+func (r *ClusterOrderReconciler) waitHostedClusterDelete(ctx context.Context, instance *v1alpha1.ClusterOrder) (bool, error) {
+	log := ctrllog.FromContext(ctx)
+
+	var hostedClusterList hypershiftv1beta1.HostedClusterList
+	if err := r.List(ctx, &hostedClusterList, labelSelectorFromInstance(instance)); err != nil {
+		log.Error(err, "failed to list hosted clusters")
+		return false, err
+	}
+
+	if len(hostedClusterList.Items) > 0 {
+		if url := r.DeleteClusterWebhook; url != "" {
+			if err := triggerWebHook(ctx, url, instance); err != nil {
+				log.Error(err, "Failed to trigger webhook")
+				return false, err
+			}
+		}
+
+		// FIXME: If we have no teardown webhook, should we deleted the hostedcluster ourselves?
+
+		return false, nil
+	}
+
+	return true, nil
+}
+
+func (r *ClusterOrderReconciler) waitNamespaceDelete(ctx context.Context, instance *v1alpha1.ClusterOrder) (bool, error) {
+	log := ctrllog.FromContext(ctx)
+
+	var namespaceList corev1.NamespaceList
+	if err := r.List(ctx, &namespaceList, labelSelectorFromInstance(instance)); err != nil {
+		log.Error(err, "Failed to list namespaces")
+		return false, err
+	}
+
+	if len(namespaceList.Items) > 0 {
+		for _, ns := range namespaceList.Items {
+			if err := r.Client.Delete(ctx, &ns); err != nil {
+				log.Error(err, "Failed to delete namespace "+ns.GetName())
+				return false, err
+			}
+		}
+		return false, nil
+	}
+
+	return true, nil
+}
+
+func (r *ClusterOrderReconciler) handleDelete(ctx context.Context, _ ctrl.Request, instance *v1alpha1.ClusterOrder) (ctrl.Result, error) {
+	log := ctrllog.FromContext(ctx)
+	log.Info("Delete " + instance.GetName())
+
+	if !controllerutil.ContainsFinalizer(instance, cloudkitFinalizer) {
+		return ctrl.Result{}, nil
+	}
+
+	// Wait until HostedCluster has been deleted
+	if gone, err := r.waitHostedClusterDelete(ctx, instance); !gone {
+		return ctrl.Result{}, err
+	}
+
+	// Wait until Namespace has been deleted
+	if gone, err := r.waitNamespaceDelete(ctx, instance); !gone {
+		return ctrl.Result{}, err
+	}
+
+	controllerutil.RemoveFinalizer(instance, cloudkitFinalizer)
+	if err := r.Update(ctx, instance); err != nil {
+		return ctrl.Result{}, err
+	}
+
+	return ctrl.Result{}, nil
+}
+
+func labelSelectorFromInstance(instance *v1alpha1.ClusterOrder) client.MatchingLabels {
+	return client.MatchingLabels{
+		cloudkitClusterOrderNamespaceLabel: instance.GetNamespace(),
+		cloudkitClusterOrderNameLabel:      instance.GetName(),
+	}
 }
