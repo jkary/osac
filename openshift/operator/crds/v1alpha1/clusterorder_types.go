@@ -29,8 +29,10 @@ type ClusterOrderSpec struct {
 	// TemplateID is the unique identigier of the cluster template to use when creating this cluster
 	// +kubebuilder:validation:Required
 	// +kubebuilder:validation:Type=string
-	// +kubebuilder:validation:Format=uuid
+	// +kubebuilder:validation:Pattern=^[a-zA-Z_][a-zA-Z0-9_]*$
 	TemplateID string `json:"templateID,omitempty"`
+	// +kubebuilder:validation:Optional
+	TemplateParameters string `json:"templateParameters,omitempty"`
 }
 
 // ClusterOrderPhaseType is a valid value for .status.phase
@@ -98,6 +100,7 @@ type ClusterOrderStatus struct {
 
 // +kubebuilder:object:root=true
 // +kubebuilder:subresource:status
+// +kubebuilder:resource:shortName=cord
 
 // ClusterOrder is the Schema for the clusterorders API
 type ClusterOrder struct {
