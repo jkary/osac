@@ -4,5 +4,5 @@ resources:
 - manager.yaml
 images:
 - name: controller
-  newName: cloudkit-operator
-  newTag: devel
+  newName: ghcr.io/innabox/cloudkit-operator
+  newTag: latest
