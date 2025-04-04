@@ -19,11 +19,11 @@ package controller
 
 import (
 	"context"
+	"fmt"
 
 	hypershiftv1beta1 "github.com/openshift/hypershift/api/hypershift/v1beta1"
 	corev1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
-	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -42,9 +42,8 @@ import (
 type NewComponentFn func(context.Context, *v1alpha1.ClusterOrder) (*appResource, error)
 
 type appResource struct {
-	object      client.Object
-	mutateFn    controllerutil.MutateFn
-	shouldExist bool
+	object   client.Object
+	mutateFn controllerutil.MutateFn
 }
 
 type component struct {
@@ -68,10 +67,6 @@ type ClusterOrderReconciler struct {
 	DeleteClusterWebhook string
 }
 
-func newClusterReference() *v1alpha1.ClusterOrderClusterReferenceType {
-	return &v1alpha1.ClusterOrderClusterReferenceType{}
-}
-
 // +kubebuilder:rbac:groups=cloudkit.openshift.io,resources=clusterorders,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=cloudkit.openshift.io,resources=clusterorders/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups=cloudkit.openshift.io,resources=clusterorders/finalizers,verbs=update
@@ -81,7 +76,7 @@ func newClusterReference() *v1alpha1.ClusterOrderClusterReferenceType {
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
 func (r *ClusterOrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	_ = ctrllog.FromContext(ctx)
+	log := ctrllog.FromContext(ctx)
 
 	instance := &v1alpha1.ClusterOrder{}
 	err := r.Client.Get(ctx, req.NamespacedName, instance)
@@ -89,11 +84,17 @@ func (r *ClusterOrderReconciler) Reconcile(ctx context.Context, req ctrl.Request
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
 
+	log.Info(fmt.Sprintf("Start reconcile for %s", instance.GetName()))
+
+	var res ctrl.Result
 	if instance.ObjectMeta.DeletionTimestamp.IsZero() {
-		return r.handleUpdate(ctx, req, instance)
+		res, err = r.handleUpdate(ctx, req, instance)
 	} else {
-		return r.handleDelete(ctx, req, instance)
+		res, err = r.handleDelete(ctx, req, instance)
 	}
+
+	log.Info(fmt.Sprintf("End reconcile for %s", instance.GetName()))
+	return res, err
 }
 
 // SetupWithManager sets up the controller with the Manager.
@@ -135,6 +136,8 @@ func (r *ClusterOrderReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Complete(r)
 }
 
+// mapObjectToCluster maps an event for a watched object to the associated
+// ClusterOrder resource.
 func (r *ClusterOrderReconciler) mapObjectToCluster(ctx context.Context, obj client.Object) []reconcile.Request {
 	log := ctrllog.FromContext(ctx)
 
@@ -160,23 +163,12 @@ func (r *ClusterOrderReconciler) mapObjectToCluster(ctx context.Context, obj cli
 	}
 }
 
+//nolint:unparam
 func (r *ClusterOrderReconciler) handleUpdate(ctx context.Context, _ ctrl.Request, instance *v1alpha1.ClusterOrder) (ctrl.Result, error) {
 	log := ctrllog.FromContext(ctx)
-	log.Info("Create or update " + instance.GetName())
 
-	// Do we have a finalizer yet?
-	if !controllerutil.ContainsFinalizer(instance, cloudkitFinalizer) {
-		controllerutil.AddFinalizer(instance, cloudkitFinalizer)
+	if controllerutil.AddFinalizer(instance, cloudkitFinalizer) {
 		if err := r.Update(ctx, instance); err != nil {
-			return ctrl.Result{}, err
-		}
-	}
-
-	// Do we have a clusterReference yet?
-	if instance.Status.ClusterReference == nil {
-		log.Info("Adding cluster reference")
-		instance.Status.ClusterReference = newClusterReference()
-		if err := r.Status().Update(ctx, instance); err != nil {
 			return ctrl.Result{}, err
 		}
 	}
@@ -186,48 +178,21 @@ func (r *ClusterOrderReconciler) handleUpdate(ctx context.Context, _ ctrl.Reques
 
 		resource, err := component.fn(ctx, instance)
 		if err != nil {
-			log.Error(err, "Failed to mutate resource", component.name)
+			log.Error(err, fmt.Sprintf("Failed to mutate resource %s", component.name))
 			return ctrl.Result{}, err
 		}
 
-		if resource.shouldExist {
-			result, err := controllerutil.CreateOrUpdate(ctx, r.Client, resource.object, resource.mutateFn)
-			if err != nil {
-				log.Error(err, "Failed to create or update "+component.name)
-				return ctrl.Result{}, err
-			}
-			switch result {
-			case controllerutil.OperationResultCreated:
-				log.Info("Created " + component.name)
-			case controllerutil.OperationResultUpdated:
-				log.Info("Updated " + component.name)
-			}
-
-			// apply any updates to status.clusterReference
-			if err := r.Status().Update(ctx, instance); err != nil {
-				return ctrl.Result{}, err
-			}
-
-			continue
-		}
-
-		// If we get this far, resource should not exist
-		// Ensure the resource does not exist, and call Delete if necessary
-		key := client.ObjectKeyFromObject(resource.object)
-		if err := r.Client.Get(ctx, key, resource.object); err != nil {
-			if apierrors.IsNotFound(err) {
-				// "not found" is the desired state. Nothing else to do.
-				continue
-			}
-			log.Error(err, "Get request for resource failed", component.name)
-			return ctrl.Result{}, err
-		}
-		err = r.Client.Delete(ctx, resource.object)
+		result, err := controllerutil.CreateOrUpdate(ctx, r.Client, resource.object, resource.mutateFn)
 		if err != nil {
-			log.Error(err, "Delete request for resource failed", component.name)
+			log.Error(err, "Failed to create or update "+component.name)
 			return ctrl.Result{}, err
 		}
-		log.Info("Deleted " + component.name)
+		switch result {
+		case controllerutil.OperationResultCreated:
+			log.Info(fmt.Sprintf("Created %s for %s", component.name, instance.GetName()))
+		case controllerutil.OperationResultUpdated:
+			log.Info(fmt.Sprintf("Updated %s for %s", component.name, instance.GetName()))
+		}
 	}
 
 	if url := r.CreateClusterWebhook; url != "" {
@@ -257,8 +222,6 @@ func (r *ClusterOrderReconciler) waitHostedClusterDelete(ctx context.Context, in
 			}
 		}
 
-		// FIXME: If we have no teardown webhook, should we deleted the hostedcluster ourselves?
-
 		return false, nil
 	}
 
@@ -276,6 +239,7 @@ func (r *ClusterOrderReconciler) waitNamespaceDelete(ctx context.Context, instan
 
 	if len(namespaceList.Items) > 0 {
 		for _, ns := range namespaceList.Items {
+			log.Info(fmt.Sprintf("Delete ns %s for %s", ns.GetName(), instance.GetName()))
 			if err := r.Client.Delete(ctx, &ns); err != nil {
 				log.Error(err, "Failed to delete namespace "+ns.GetName())
 				return false, err
@@ -287,6 +251,7 @@ func (r *ClusterOrderReconciler) waitNamespaceDelete(ctx context.Context, instan
 	return true, nil
 }
 
+//nolint:unparam
 func (r *ClusterOrderReconciler) handleDelete(ctx context.Context, _ ctrl.Request, instance *v1alpha1.ClusterOrder) (ctrl.Result, error) {
 	log := ctrllog.FromContext(ctx)
 	log.Info("Delete " + instance.GetName())
@@ -305,9 +270,10 @@ func (r *ClusterOrderReconciler) handleDelete(ctx context.Context, _ ctrl.Reques
 		return ctrl.Result{}, err
 	}
 
-	controllerutil.RemoveFinalizer(instance, cloudkitFinalizer)
-	if err := r.Update(ctx, instance); err != nil {
-		return ctrl.Result{}, err
+	if controllerutil.RemoveFinalizer(instance, cloudkitFinalizer) {
+		if err := r.Update(ctx, instance); err != nil {
+			return ctrl.Result{}, err
+		}
 	}
 
 	return ctrl.Result{}, nil

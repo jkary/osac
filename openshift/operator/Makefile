@@ -67,7 +67,7 @@ endif
 # Be aware that the target commands are only tested with Docker which is
 # scaffolded by default. However, you might want to replace it to use other
 # tools. (i.e. podman)
-CONTAINER_TOOL ?= docker
+CONTAINER_TOOL ?= podman
 
 # KIND defines the path to your kind binary.
 KIND = kind
@@ -150,7 +150,7 @@ image-build: ## Build container image with the manager.
 	$(CONTAINER_TOOL) build -t ${IMG} -f ${CONTAINERFILE} .
 
 .PHONY: docker-push
-docker-push: ## Push container image with the manager.
+image-push: ## Push container image with the manager.
 	$(CONTAINER_TOOL) push ${IMG}
 
 .PHONY: kind-load

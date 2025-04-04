@@ -39,7 +39,6 @@ func (r *ClusterOrderReconciler) newNamespace(ctx context.Context, instance *v1a
 	return &appResource{
 		namespace,
 		mutateFn,
-		true,
 	}, nil
 }
 
@@ -68,7 +67,6 @@ func (r *ClusterOrderReconciler) newServiceAccount(ctx context.Context, instance
 	return &appResource{
 		sa,
 		mutateFn,
-		true,
 	}, nil
 }
 
@@ -115,7 +113,6 @@ func (r *ClusterOrderReconciler) newAdminRoleBinding(ctx context.Context, instan
 	return &appResource{
 		roleBinding,
 		mutateFn,
-		true,
 	}, nil
 }
 
