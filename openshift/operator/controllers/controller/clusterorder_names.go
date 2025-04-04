@@ -8,10 +8,11 @@ import (
 )
 
 const (
-	defaultServiceAccountName string = "cloudkit"
-	defaultHostedClusterName  string = "cluster"
-	defaultRoleBindingName    string = "cloudkit"
-	cloudkitAppName           string = "cloudkit-operator"
+	defaultServiceAccountName    string = "cloudkit"
+	defaultHostedClusterName     string = "cluster"
+	defaultRoleBindingName       string = "cloudkit"
+	defaultClusterOrderNamespace string = "cloudkit-orders"
+	cloudkitAppName              string = "cloudkit-operator"
 
 	cloudkitNamePrefix string = "cloudkit.openshift.io"
 )

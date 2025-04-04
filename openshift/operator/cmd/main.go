@@ -146,12 +146,13 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err = (&controller.ClusterOrderReconciler{
-		Client:               mgr.GetClient(),
-		Scheme:               mgr.GetScheme(),
-		CreateClusterWebhook: os.Getenv("CLOUDKIT_CLUSTER_CREATE_WEBHOOK"),
-		DeleteClusterWebhook: os.Getenv("CLOUDKIT_CLUSTER_DELETE_WEBHOOK"),
-	}).SetupWithManager(mgr); err != nil {
+	if err = (controller.NewClusterOrderReconciler(
+		mgr.GetClient(),
+		mgr.GetScheme(),
+		os.Getenv("CLOUDKIT_CLUSTER_CREATE_WEBHOOK"),
+		os.Getenv("CLOUDKIT_CLUSTER_DELETE_WEBHOOK"),
+		os.Getenv("CLOUDKIT_CLUSTER_ORDER_NAMESPACE"),
+	)).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "ClusterOrder")
 		os.Exit(1)
 	}

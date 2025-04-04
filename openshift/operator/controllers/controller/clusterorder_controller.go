@@ -62,9 +62,23 @@ func (r *ClusterOrderReconciler) components() []component {
 // ClusterOrderReconciler reconciles a ClusterOrder object
 type ClusterOrderReconciler struct {
 	client.Client
-	Scheme               *runtime.Scheme
-	CreateClusterWebhook string
-	DeleteClusterWebhook string
+	Scheme                *runtime.Scheme
+	CreateClusterWebhook  string
+	DeleteClusterWebhook  string
+	ClusterOrderNamespace string
+}
+
+func NewClusterOrderReconciler(client client.Client, scheme *runtime.Scheme, createClusterWebhook string, deleteClusterWebhook string, clusterOrderNamespace string) *ClusterOrderReconciler {
+	if clusterOrderNamespace == "" {
+		clusterOrderNamespace = defaultClusterOrderNamespace
+	}
+	return &ClusterOrderReconciler{
+		Client:                client,
+		Scheme:                scheme,
+		CreateClusterWebhook:  createClusterWebhook,
+		DeleteClusterWebhook:  deleteClusterWebhook,
+		ClusterOrderNamespace: clusterOrderNamespace,
+	}
 }
 
 // +kubebuilder:rbac:groups=cloudkit.openshift.io,resources=clusterorders,verbs=get;list;watch;create;update;patch;delete
@@ -82,6 +96,11 @@ func (r *ClusterOrderReconciler) Reconcile(ctx context.Context, req ctrl.Request
 	err := r.Client.Get(ctx, req.NamespacedName, instance)
 	if err != nil {
 		return ctrl.Result{}, client.IgnoreNotFound(err)
+	}
+
+	// FIXME: This is probably the wrong solution.
+	if instance.GetNamespace() != r.ClusterOrderNamespace {
+		return ctrl.Result{}, nil
 	}
 
 	log.Info(fmt.Sprintf("Start reconcile for %s", instance.GetName()))
