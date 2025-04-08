@@ -4,4 +4,4 @@ cluster_settings_result:
 
 cluster_settings_template_defaults:
   number_of_nodes: 2
-  base_domain: "svc.massopen.cloud"
+  base_domain: "box.massopen.cloud"
