@@ -1,0 +1,15 @@
+argument_specs:
+  main:
+    options:
+      network_state:
+        type: "str"
+        default: present
+        choices:
+        - present
+        - absent
+      network_name_or_id:
+        description: |
+          Name of the network when state is `present`.
+          Name or ID of network to be deleted when state is `absent`; the deletion will fail if the network name is not unique.
+        type: "str"
+        required: true
