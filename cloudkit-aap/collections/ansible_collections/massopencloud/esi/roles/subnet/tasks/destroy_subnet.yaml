@@ -7,6 +7,19 @@
   ansible.builtin.set_fact:
     subnet_show_cmd_result: "{{ subnet_show_cmd_raw.stdout | from_json }}"
 
-- name: Destroy subnet  # noqa:no-changed-when
+- name: Get related ports  # noqa:no-changed-when
   ansible.builtin.command: >-
-    openstack subnet delete {{ subnet_show_cmd_result.id }}
+    openstack port list --fixed-ip subnet="{{ subnet_show_cmd_result.id }}"
+      -f json
+  register: subnet_port_list_cmd_raw
+
+- name: Delete related ports
+  openstack.cloud.port:
+    state: "absent"
+    name: "{{ item.ID }}"
+  loop: "{{ subnet_port_list_cmd_raw.stdout | from_json }}"
+
+- name: Destroy subnet  # noqa:no-changed-when
+  openstack.cloud.subnet:
+    state: "absent"
+    name: "{{ subnet_show_cmd_result.id }}"
