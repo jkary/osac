@@ -11,7 +11,7 @@
 - name: Create a new router
   when: not routers.routers
   block:
-  - name: Create router  # noqa:no-changed-when
+  - name: Create router
     openstack.cloud.router:
       name: "{{ router_name_or_id }}"
       network: "{{ router_external_network }}"

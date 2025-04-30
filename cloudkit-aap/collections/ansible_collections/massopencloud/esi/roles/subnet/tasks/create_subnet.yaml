@@ -11,7 +11,7 @@
 - name: Create a new subnet
   when: not subnets.subnets
   block:
-  - name: Create subnet  # noqa:no-changed-when
+  - name: Create subnet
     openstack.cloud.subnet:
       name: "{{ subnet_name_or_id }}"
       network: "{{ network_name_or_id }}"

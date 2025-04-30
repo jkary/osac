@@ -11,7 +11,7 @@
 - name: Create a new network
   when: not networks.networks
   block:
-  - name: Create network  # noqa:no-changed-when
+  - name: Create network
     openstack.cloud.network:
       name: "{{ network_name_or_id }}"
     register: network_cmd_result
