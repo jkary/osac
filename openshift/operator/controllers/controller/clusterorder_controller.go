@@ -22,7 +22,6 @@ import (
 	"fmt"
 
 	hypershiftv1beta1 "github.com/openshift/hypershift/api/hypershift/v1beta1"
-	"google.golang.org/grpc"
 	corev1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
@@ -69,7 +68,6 @@ type ClusterOrderReconciler struct {
 	CreateClusterWebhook  string
 	DeleteClusterWebhook  string
 	ClusterOrderNamespace string
-	GrpcConn              *grpc.ClientConn
 }
 
 func NewClusterOrderReconciler(
@@ -78,7 +76,6 @@ func NewClusterOrderReconciler(
 	createClusterWebhook string,
 	deleteClusterWebhook string,
 	clusterOrderNamespace string,
-	grpcConn *grpc.ClientConn,
 ) *ClusterOrderReconciler {
 	if clusterOrderNamespace == "" {
 		clusterOrderNamespace = defaultClusterOrderNamespace
@@ -89,7 +86,6 @@ func NewClusterOrderReconciler(
 		CreateClusterWebhook:  createClusterWebhook,
 		DeleteClusterWebhook:  deleteClusterWebhook,
 		ClusterOrderNamespace: clusterOrderNamespace,
-		GrpcConn:              grpcConn,
 	}
 }
 
@@ -202,7 +198,6 @@ func (r *ClusterOrderReconciler) mapObjectToCluster(ctx context.Context, obj cli
 	}
 }
 
-//nolint:unparam
 func (r *ClusterOrderReconciler) handleUpdate(ctx context.Context, _ ctrl.Request, instance *v1alpha1.ClusterOrder) (ctrl.Result, error) {
 	log := ctrllog.FromContext(ctx)
 
@@ -304,7 +299,6 @@ func (r *ClusterOrderReconciler) findNamespace(ctx context.Context, instance *v1
 	return &namespaceList.Items[0], nil
 }
 
-//nolint:unparam
 func (r *ClusterOrderReconciler) handleDelete(ctx context.Context, _ ctrl.Request, instance *v1alpha1.ClusterOrder) (ctrl.Result, error) {
 	log := ctrllog.FromContext(ctx)
 	log.Info(fmt.Sprintf("Deleting ClusterOrder %s", instance.GetName()))
