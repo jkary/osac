@@ -1,6 +1,6 @@
 - name: Check if router exists
   openstack.cloud.routers_info:
-    name: "{{ router_name_or_id }}"
+    name: "{{ router_name }}"
   register: routers
 
 - name: Set create_router_result to found router
@@ -13,8 +13,8 @@
   block:
   - name: Create router
     openstack.cloud.router:
-      name: "{{ router_name_or_id }}"
-      network: "{{ router_external_network }}"
+      name: "{{ router_name }}"
+      network: "{{ l3_router_external_network }}"
       interfaces: "{{ router_subnets }}"
     register: router_cmd_result
 

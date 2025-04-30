@@ -1,0 +1,39 @@
+argument_specs:
+  create_subnet:
+    options:
+      network_id:
+        description: |
+          ID of the network associated with the subnet
+        type: "str"
+        required: true
+      subnet_name:
+        description: |
+          Name of the subnet to be created
+        type: "str"
+        required: true
+  destroy_subnet:
+    options:
+      subnet_name:
+        description: |
+          Name or ID of the subnet to be destroyed
+        type: "str"
+        required: true
+  create_router:
+    options:
+      router_name:
+        description: |
+          Name of the router to be created
+        type: "str"
+        required: true
+      router_subnets:
+        description: |
+          List of names or IDs of the subnets to attach to the router
+        type: "list"
+        required: false
+  destroy_router:
+    options:
+      router_name:
+        description: |
+          Name or ID of the router to be destroyed
+        type: "str"
+        required: true

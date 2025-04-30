@@ -1,6 +1,6 @@
 - name: Check that exactly one router matching the ident exists  # noqa:no-changed-when
   ansible.builtin.command: >-
-    openstack router show {{ router_name_or_id }} -f json
+    openstack router show {{ router_name }} -f json
   register: router_show_cmd_raw
 
 - name: Unmarshal output from JSON

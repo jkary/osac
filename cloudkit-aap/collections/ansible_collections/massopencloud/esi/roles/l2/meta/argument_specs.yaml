@@ -1,0 +1,20 @@
+argument_specs:
+  main:
+    options:
+      l2_network_mtu:
+        description: |
+          MTU of desired network.
+        type: "int"
+        required: false
+      network_state:
+        type: "str"
+        default: present
+        choices:
+        - present
+        - absent
+      network_name:
+        description: |
+          Name of the network when state is `present`.
+          Name of network to be deleted when state is `absent`; the deletion will fail if the network name is not unique.
+        type: "str"
+        required: true
