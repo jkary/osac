@@ -112,6 +112,9 @@ type ClusterOrderStatus struct {
 	// Reference to the namespace that contains the HostedCluster resource
 	// +kubebuilder:validation:Optional
 	ClusterReference *ClusterOrderClusterReferenceType `json:"clusterReference,omitempty"`
+
+	// NodeRequests reflects how many nodes are currently associated with the ClusterOrder
+	NodeRequests []NodeRequest `json:"nodeCounts,omitempty"`
 }
 
 // +kubebuilder:object:root=true
