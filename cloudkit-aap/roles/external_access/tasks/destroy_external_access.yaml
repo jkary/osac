@@ -9,12 +9,15 @@
   retries: "{{ external_access_resource_wait_retries }}"
   delay: "{{ external_access_resource_wait_delay }}"
 
-- name: Destroy api floating ip
+- name: Destroy floating ips
   ansible.builtin.include_role:
     name: massopencloud.esi.floating_ip
     tasks_from: destroy_floating_ip.yaml
   vars:
-    floating_ip_name: "{{ external_access_name }}-api"  # noqa:var-naming[no-role-prefix]
+    floating_ip_name: "{{ item }}"
+  loop:
+    - "{{ external_access_name }}-api"
+    - "{{ external_access_name }}-ingress"
 
 - name: Delete api dns record
   amazon.aws.route53:
