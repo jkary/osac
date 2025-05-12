@@ -98,14 +98,14 @@ func main() {
 	)
 	flag.StringVar(
 		&grpcTokenFile,
-		"grpc-token-file",
-		"",
-		"Path of the file containing the token for gRPC authentication.",
+		"fulfillment-server-token-file",
+		os.Getenv("CLOUDKIT_FULFILLMENT_TOKEN_FILE"),
+		"Path of the file containing the token for gRPC authentication to the fulfillment service.",
 	)
 	flag.StringVar(
 		&fulfillmentServerAddress,
 		"fulfillment-server-address",
-		"",
+		os.Getenv("CLOUDKIT_FULFILLMENT_SERVER_ADDRESS"),
 		"Address of the fulfillment server.",
 	)
 	opts := zap.Options{
