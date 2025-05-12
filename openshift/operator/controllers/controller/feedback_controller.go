@@ -70,6 +70,7 @@ func NewFeedbackReconciler(logger logr.Logger, hubClient clnt.Client, grpcConn *
 // SetupWithManager adds the reconciler to the controller manager.
 func (r *FeedbackReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
+		Named("clusterorder-feedback").
 		For(&ckv1alpha1.ClusterOrder{}).
 		Complete(r)
 }
