@@ -17,6 +17,8 @@
     - name: Determine working namespace
       ansible.builtin.include_role:
         name: cluster_working_namespace
+      vars:
+        cluster_working_namespace_cluster_order_name: "{{ cluster_order.metadata.name }}"
 
     - name: Call the selected template
       ansible.builtin.include_role:

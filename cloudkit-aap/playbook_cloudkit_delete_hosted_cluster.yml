@@ -12,6 +12,8 @@
     - name: Extract template info
       ansible.builtin.include_role:
         name: extract_template_info
+      vars:
+        cluster_working_namespace_cluster_order_name: "{{ cluster_order.metadata.name }}"
 
   tasks:
     - name: Determine working namespace
