@@ -136,6 +136,10 @@ type ClusterOrderList struct {
 	Items           []ClusterOrder `json:"items"`
 }
 
+func (co *ClusterOrder) SetPhase(phase ClusterOrderPhaseType) {
+	co.Status.Phase = phase
+}
+
 func init() {
 	SchemeBuilder.Register(&ClusterOrder{}, &ClusterOrderList{})
 }

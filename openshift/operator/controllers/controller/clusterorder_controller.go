@@ -240,6 +240,7 @@ func (r *ClusterOrderReconciler) handleUpdate(ctx context.Context, _ ctrl.Reques
 
 		if controlPlaneIsAvailable(hc) {
 			instance.SetStatusCondition(v1alpha1.ConditionControlPlaneAvailable, metav1.ConditionTrue, "", v1alpha1.ReasonAsExpected)
+			instance.SetPhase(v1alpha1.ClusterOrderPhaseReady)
 		}
 	} else {
 		// only trigger webhook if the hostedcluster does not exist

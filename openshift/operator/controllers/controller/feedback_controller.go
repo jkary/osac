@@ -263,7 +263,7 @@ func (t *feedbackReconcilerTask) syncCondition(condition metav1.Condition) error
 	case ckv1alpha1.ClusterOrderConditionProgressing:
 		// TODO: There is no equivalent condition.
 	case ckv1alpha1.ClusterOrderConditionControlPlaneAvailable:
-		// TODO: There is no equivalent condition.
+		return t.syncConditionFulfilled(condition)
 	case ckv1alpha1.ClusterOrderConditionAvailable:
 		// TODO: There is no equivalent condition.
 	default:
@@ -271,6 +271,18 @@ func (t *feedbackReconcilerTask) syncCondition(condition metav1.Condition) error
 			"Unknown condition, will ignore it",
 			"condition", condition.Type,
 		)
+	}
+	return nil
+}
+
+func (t *feedbackReconcilerTask) syncConditionFulfilled(condition metav1.Condition) error {
+	orderCondition := t.findOrderCondition(ffv1.ClusterOrderConditionType_CLUSTER_ORDER_CONDITION_TYPE_FULFILLED)
+	oldStatus := orderCondition.GetStatus()
+	newStatus := t.mapConditionStatus(condition.Status)
+	orderCondition.SetStatus(newStatus)
+	orderCondition.SetMessage(condition.Message)
+	if newStatus != oldStatus {
+		orderCondition.SetLastTransitionTime(timestamppb.Now())
 	}
 	return nil
 }
@@ -437,7 +449,7 @@ func (t *feedbackReconcilerTask) calculateConsoleURL() string {
 		return ""
 	}
 	return fmt.Sprintf(
-		"https://console-openshift-console.%s.%s",
+		"https://console-openshift-console.apps.%s.%s",
 		t.hostedCluster.Name, t.hostedCluster.Spec.DNS.BaseDomain,
 	)
 }
