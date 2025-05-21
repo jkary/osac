@@ -154,7 +154,7 @@ spec:
                   - type
                   type: object
                 type: array
-              nodeCounts:
+              nodeRequests:
                 description: NodeRequests reflects how many nodes are currently associated
                   with the ClusterOrder
                 items:

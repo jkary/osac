@@ -114,7 +114,7 @@ type ClusterOrderStatus struct {
 	ClusterReference *ClusterOrderClusterReferenceType `json:"clusterReference,omitempty"`
 
 	// NodeRequests reflects how many nodes are currently associated with the ClusterOrder
-	NodeRequests []NodeRequest `json:"nodeCounts,omitempty"`
+	NodeRequests []NodeRequest `json:"nodeRequests,omitempty"`
 }
 
 // +kubebuilder:object:root=true
