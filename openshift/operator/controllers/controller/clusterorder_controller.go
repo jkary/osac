@@ -206,7 +206,7 @@ func (r *ClusterOrderReconciler) mapObjectToCluster(ctx context.Context, obj cli
 func (r *ClusterOrderReconciler) handleUpdate(ctx context.Context, _ ctrl.Request, instance *v1alpha1.ClusterOrder) (ctrl.Result, error) {
 	log := ctrllog.FromContext(ctx)
 
-	instance.InitializeConditionsForUpdate()
+	r.initializeStatusConditions(instance)
 
 	if controllerutil.AddFinalizer(instance, cloudkitFinalizer) {
 		if err := r.Update(ctx, instance); err != nil {
@@ -433,6 +433,65 @@ func (r *ClusterOrderReconciler) handleDelete(ctx context.Context, _ ctrl.Reques
 	}
 
 	return ctrl.Result{}, nil
+}
+
+// initializeStatusConditions initializes the conditions that haven't already been initialized.
+func (r *ClusterOrderReconciler) initializeStatusConditions(instance *v1alpha1.ClusterOrder) {
+	r.initializeStatusCondition(
+		instance,
+		v1alpha1.ConditionAccepted,
+		metav1.ConditionTrue,
+		v1alpha1.ReasonInitialized,
+	)
+	r.initializeStatusCondition(
+		instance,
+		v1alpha1.ConditionDeleting,
+		metav1.ConditionFalse,
+		v1alpha1.ReasonInitialized,
+	)
+	r.initializeStatusCondition(
+		instance,
+		v1alpha1.ConditionProgressing,
+		metav1.ConditionTrue,
+		v1alpha1.ReasonProgressing,
+	)
+	r.initializeStatusCondition(
+		instance,
+		v1alpha1.ConditionNamespaceCreated,
+		metav1.ConditionFalse,
+		v1alpha1.ReasonInitialized,
+	)
+	r.initializeStatusCondition(
+		instance,
+		v1alpha1.ConditionControlPlaneCreated,
+		metav1.ConditionFalse,
+		v1alpha1.ReasonInitialized)
+	r.initializeStatusCondition(
+		instance,
+		v1alpha1.ConditionControlPlaneAvailable,
+		metav1.ConditionFalse,
+		v1alpha1.ReasonInitialized,
+	)
+}
+
+// initializeStatusCondition initializes a condition, but only it is not already initialized.
+func (r *ClusterOrderReconciler) initializeStatusCondition(instance *v1alpha1.ClusterOrder,
+	conditionType string, status metav1.ConditionStatus, reason string) {
+	if instance.Status.Conditions == nil {
+		instance.Status.Conditions = []metav1.Condition{}
+	}
+	condition := meta.FindStatusCondition(instance.Status.Conditions, conditionType)
+	if condition != nil {
+		return
+	}
+	_ = meta.SetStatusCondition(
+		&instance.Status.Conditions,
+		metav1.Condition{
+			Type:   conditionType,
+			Status: status,
+			Reason: reason,
+		},
+	)
 }
 
 func labelSelectorFromInstance(instance *v1alpha1.ClusterOrder) client.MatchingLabels {
