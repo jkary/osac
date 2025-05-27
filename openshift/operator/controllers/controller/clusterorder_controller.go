@@ -108,6 +108,12 @@ func (r *ClusterOrderReconciler) Reconcile(ctx context.Context, req ctrl.Request
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
 
+	val, exists := instance.Annotations[cloudkitManagementStateAnnotation]
+	if exists && val == "unmanaged" {
+		log.Info(fmt.Sprintf("Ignoring ClusterOrder %s because of annotation", instance.GetName()))
+		return ctrl.Result{}, nil
+	}
+
 	log.Info(fmt.Sprintf("Start reconcile for %s", instance.GetName()))
 
 	oldstatus := instance.Status.DeepCopy()
@@ -257,7 +263,10 @@ func (r *ClusterOrderReconciler) handleUpdate(ctx context.Context, _ ctrl.Reques
 	}
 
 	if url := r.CreateClusterWebhook; url != "" {
-		if err := triggerWebHook(ctx, url, instance); err != nil {
+		val, exists := instance.Annotations[cloudkitManagementStateAnnotation]
+		if exists && val == "manual" {
+			log.Info(fmt.Sprintf("Not triggering create webhook for ClusterOrder %s because of annotation", instance.GetName()))
+		} else if err := triggerWebHook(ctx, url, instance); err != nil {
 			log.Error(err, fmt.Sprintf("Failed to trigger webhook %s: %v", url, err))
 			return ctrl.Result{Requeue: true}, nil
 		}
@@ -428,7 +437,10 @@ func (r *ClusterOrderReconciler) handleDelete(ctx context.Context, _ ctrl.Reques
 		if hc, err := r.findHostedCluster(ctx, instance, ns.GetName()); hc != nil {
 			log.Info(fmt.Sprintf("Waiting for HostedCluster %s to delete", hc.GetName()))
 			if url := r.DeleteClusterWebhook; url != "" {
-				if err := triggerWebHook(ctx, url, instance); err != nil {
+				val, exists := instance.Annotations[cloudkitManagementStateAnnotation]
+				if exists && val == "manual" {
+					log.Info(fmt.Sprintf("Not triggering delete webhook for ClusterOrder %s because of annotation", instance.GetName()))
+				} else if err := triggerWebHook(ctx, url, instance); err != nil {
 					log.Error(err, fmt.Sprintf("Failed to trigger webhook %s: %v", url, err))
 					return ctrl.Result{Requeue: true}, nil
 				}

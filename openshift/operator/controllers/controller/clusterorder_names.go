@@ -18,9 +18,10 @@ const (
 )
 
 var (
-	cloudkitClusterOrderNameLabel string = fmt.Sprintf("%s/clusterorder", cloudkitNamePrefix)
-	cloudkitClusterOrderIDLabel   string = fmt.Sprintf("%s/clusterorder-uuid", cloudkitNamePrefix)
-	cloudkitFinalizer             string = fmt.Sprintf("%s/finalizer", cloudkitNamePrefix)
+	cloudkitClusterOrderNameLabel     string = fmt.Sprintf("%s/clusterorder", cloudkitNamePrefix)
+	cloudkitClusterOrderIDLabel       string = fmt.Sprintf("%s/clusterorder-uuid", cloudkitNamePrefix)
+	cloudkitFinalizer                 string = fmt.Sprintf("%s/finalizer", cloudkitNamePrefix)
+	cloudkitManagementStateAnnotation string = fmt.Sprintf("%s/management-state", cloudkitNamePrefix)
 )
 
 func generateNamespaceName(instance *v1alpha1.ClusterOrder) string {
