@@ -22,7 +22,7 @@ argument_specs:
     options:
       networks:
         description: |
-          List of names of networks
+          List of names or UUIDs of networks
         type: "list"
         required: true
       node:

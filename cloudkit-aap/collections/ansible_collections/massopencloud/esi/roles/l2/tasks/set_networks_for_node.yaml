@@ -14,7 +14,13 @@
 
 - name: Filter networks and get their UUIDs
   ansible.builtin.set_fact:
-    network_uuids: "{{ all_networks.networks | selectattr('name', 'in', networks) | map(attribute='id') }}"
+    network_uuids: >
+      {{
+        (
+          (all_networks.networks | selectattr('name', 'in', networks)) +
+          (all_networks.networks | selectattr('id', 'in', networks))
+        ) | map(attribute='id') | unique
+      }}
 
 - name: Check if configured networks are different from desired networks
   ansible.builtin.set_fact:
