@@ -73,6 +73,7 @@ CONTAINER_TOOL ?= podman
 
 # KIND defines the path to your kind binary.
 KIND = kind
+KIND_CLUSTER_NAME = innabox
 
 # Setting SHELL to bash allows bash commands to be executed by recipes.
 # Options are set to exit when a recipe line exits non-zero or a piped command fails.
@@ -164,7 +165,7 @@ image-run: ## Run container image locally.
 
 .PHONY: kind-load
 kind-load: image-build
-	$(KIND) load docker-image ${IMG}
+	$(KIND) load docker-image -n ${KIND_CLUSTER_NAME} ${IMG}
 
 # PLATFORMS defines the target platforms for the manager image be built to provide support to multiple
 # architectures. (i.e. make docker-buildx IMG=myregistry/mypoperator:0.0.1). To use this option you need to:
