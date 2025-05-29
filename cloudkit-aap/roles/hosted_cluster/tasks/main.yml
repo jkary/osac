@@ -78,19 +78,19 @@
         infrastructureAvailabilityPolicy: HighlyAvailable
         olmCatalogPlacement: management
 
-- name: Manage NodePool resource
+- name: Manage NodePool resources
   kubernetes.core.k8s:
     state: "{{ hosted_cluster_state }}"
     definition:
       apiVersion: hypershift.openshift.io/v1beta1
       kind: NodePool
       metadata:
-        name: "nodepool-{{ hosted_cluster_name }}"
+        name: "nodepool-{{ hosted_cluster_name }}-{{ item.resourceClass }}"
         namespace: "{{ hosted_cluster_namespace }}"
         labels: "{{ hosted_cluster_default_cluster_order_label }}"
       spec:
         clusterName: "{{ hosted_cluster_name }}"
-        replicas: "{{ hosted_cluster_node_count | int }}"
+        replicas: "{{ item.numberOfNodes | int }}"
         management:
           autoRepair: false
           upgradeType: InPlace
@@ -98,6 +98,61 @@
           type: Agent
           agent:
             agentLabelSelector:
-              matchLabels: "{{ hosted_cluster_default_cluster_order_label }}"
+              matchLabels: "{{ {esi_agent_resource_class_label: item.resourceClass} | combine(hosted_cluster_default_cluster_order_label) }}"
         release:
           image: "{{ ocp_release_image }}"
+  loop: "{{ hosted_cluster_node_requests }}"
+  loop_control:
+    label: "Manage NodePool nodepool-{{ hosted_cluster_name }}-{{ item.resourceClass }}"
+
+- name: Create cluster network
+  ansible.builtin.include_role:
+    name: massopencloud.esi.network
+  vars:
+    network_suffix: "{{ hosted_cluster_name }}"
+    network_state: "{{ hosted_cluster_state }}"
+  when: hosted_cluster_state == "present"
+
+- name: Select and label new Agents resources
+  ansible.builtin.include_role:
+    name: manage_agents
+    tasks_from: select_and_label_new_agents
+  vars:
+    manage_agents_cluster_order_name: "{{ hosted_cluster_name }}"
+    manage_agents_desired_count: "{{ item.numberOfNodes | int }}"
+    manage_agents_resource_class: "{{ item.resourceClass }}"
+  loop: "{{ hosted_cluster_node_requests }}"
+
+- name: Attach agents to cluster network and approve them
+  ansible.builtin.include_role:
+    name: manage_agents
+    tasks_from: attach_and_approve_all_new_agents
+  vars:
+    manage_agents_cluster_order_name: "{{ hosted_cluster_name }}"
+    manage_agents_cluster_network: "{{ create_network_result|default(omit) }}"
+
+- name: Wait for the Agents to be removed from the cluster
+  ansible.builtin.include_role:
+    name: manage_agents
+    tasks_from: wait_for_agents_to_be_removed
+  vars:
+    manage_agents_cluster_order_name: "{{ hosted_cluster_name }}"
+    manage_agents_desired_count: "{{ item.numberOfNodes | int }}"
+    manage_agents_resource_class: "{{ item.resourceClass }}"
+  loop: "{{ hosted_cluster_node_requests }}"
+
+- name: Approve agents assigned to the hosted cluster
+  ansible.builtin.include_role:
+    name: manage_agents
+    tasks_from: attach_and_approve_all_new_agents
+  vars:
+    manage_agents_cluster_order_name: "{{ hosted_cluster_name }}"
+    manage_agents_cluster_network: "{{ create_network_result|default(omit) }}"
+
+- name: Delete cluster network
+  ansible.builtin.include_role:
+    name: massopencloud.esi.network
+  vars:
+    network_suffix: "{{ hosted_cluster_name }}"
+    network_state: "{{ hosted_cluster_state }}"
+  when: hosted_cluster_state == "absent"
