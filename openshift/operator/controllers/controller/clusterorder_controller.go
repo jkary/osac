@@ -258,6 +258,12 @@ func (r *ClusterOrderReconciler) handleUpdate(ctx context.Context, _ ctrl.Reques
 		return ctrl.Result{}, err
 	}
 
+	if hc, _ := r.findHostedCluster(ctx, instance, ns.GetName()); hc != nil {
+		if err := r.handleHostedCluster(ctx, instance, hc); err != nil {
+			return ctrl.Result{}, err
+		}
+	}
+
 	if url := r.CreateClusterWebhook; url != "" {
 		val, exists := instance.Annotations[cloudkitManagementStateAnnotation]
 		if exists && val == "manual" {
@@ -277,39 +283,38 @@ func (r *ClusterOrderReconciler) handleUpdate(ctx context.Context, _ ctrl.Reques
 		}
 	}
 
-	if hc, _ := r.findHostedCluster(ctx, instance, ns.GetName()); hc != nil {
-		return r.handleHostedCluster(ctx, instance, hc)
-	}
 	return ctrl.Result{}, nil
 }
 
 func (r *ClusterOrderReconciler) handleHostedCluster(ctx context.Context, instance *v1alpha1.ClusterOrder,
-	hc *hypershiftv1beta1.HostedCluster) (ctrl.Result, error) {
+	hc *hypershiftv1beta1.HostedCluster) error {
+
+	log := ctrllog.FromContext(ctx)
 
 	name := hc.GetName()
 	instance.SetClusterReferenceHostedClusterName(name)
 	instance.SetStatusCondition(v1alpha1.ConditionControlPlaneCreated, metav1.ConditionTrue, "", v1alpha1.ReasonAsExpected)
 
 	if hostedClusterControlPlaneIsAvailable(hc) {
+		log.Info("hosted control plane is available", "clusterorder", instance.GetName())
+		instance.SetStatusCondition(v1alpha1.ConditionControlPlaneAvailable, metav1.ConditionTrue, "", v1alpha1.ReasonAsExpected)
+
 		if hostedClusterIsReady(hc) {
+			log.Info("hosted cluster is ready", "clusterorder", instance.GetName())
 			instance.SetStatusCondition(v1alpha1.ConditionClusterAvailable, metav1.ConditionTrue, "", v1alpha1.ReasonAsExpected)
 			instance.Status.Phase = v1alpha1.ClusterOrderPhaseReady
-		} else {
-			instance.SetStatusCondition(v1alpha1.ConditionControlPlaneAvailable, metav1.ConditionTrue, "", v1alpha1.ReasonAsExpected)
 		}
 	}
 
 	// Fetch the node pools and handle them:
 	nodePools := &hypershiftv1beta1.NodePoolList{}
-	err := r.List(ctx, nodePools, client.InNamespace(hc.Namespace), labelSelectorFromInstance(instance))
-	if err != nil {
-		return ctrl.Result{}, err
+	if err := r.List(ctx, nodePools, client.InNamespace(hc.Namespace), labelSelectorFromInstance(instance)); err != nil {
+		return err
 	}
-	err = r.handleNodePools(ctx, instance, nodePools)
-	if err != nil {
-		return ctrl.Result{}, err
+	if err := r.handleNodePools(ctx, instance, nodePools); err != nil {
+		return err
 	}
-	return ctrl.Result{}, nil
+	return nil
 }
 
 func (r *ClusterOrderReconciler) handleNodePools(ctx context.Context, instance *v1alpha1.ClusterOrder,
