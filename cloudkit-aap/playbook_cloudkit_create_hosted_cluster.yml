@@ -21,9 +21,17 @@
             lookup('community.general.random_string', special=false, numbers=false, upper=false)
           }}
 
+    - name: cluster order before defaults
+      ansible.builtin.debug:
+        var: cluster_order
+
     - name: Apply default settings
       ansible.builtin.include_role:
         name: cluster_settings
+
+    - name: cluster order after defaults
+      ansible.builtin.debug:
+        var: cluster_order
 
     - name: Extract template info
       ansible.builtin.include_role:

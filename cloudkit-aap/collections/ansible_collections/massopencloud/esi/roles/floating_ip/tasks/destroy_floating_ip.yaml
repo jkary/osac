@@ -17,7 +17,13 @@
   - name: Unset floating ip port  # noqa:no-changed-when
     ansible.builtin.command: >-
       openstack floating ip unset --port {{ destroy_floating_ip }}
+    register: floating_ip_unset_result
+    failed_when: >
+        floating_ip_unset_result.rc != 0 and "No FloatingIP found" not in floating_ip_unset_result.stderr
 
   - name: Delete floating ip  # noqa:no-changed-when
     ansible.builtin.command: >-
       openstack floating ip delete {{ destroy_floating_ip }}
+    register: floating_ip_delete_result
+    failed_when: >
+        floating_ip_delete_result.rc != 0 and "No FloatingIP found" not in floating_ip_delete_result.stderr
