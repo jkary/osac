@@ -26,3 +26,5 @@ Thumbs.db
 # Ignore local development overrides
 local/
 *.local.yaml
+
+dockerconfig.json

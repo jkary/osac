@@ -1,7 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "Bash(kubectl kustomize:*)"
+      "Bash(kubectl kustomize:*)",
+      "Bash(oc delete:*)",
+      "Bash(oc apply:*)"
     ],
     "deny": []
   }
