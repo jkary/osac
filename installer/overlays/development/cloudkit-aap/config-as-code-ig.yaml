@@ -1,0 +1,12 @@
+---
+aap_hostname: localhost
+aap_username: "{{ lookup('env', 'AAP_USERNAME') }}"
+aap_password: "{{ lookup('env', 'AAP_PASSWORD') }}"
+aap_organization_name: foo
+aap_project_name: bar
+aap_project_git_uri: ...
+aap_project_git_branch: ...
+aap_ee_image: "quay.io/rh-ee-jkary/cloudkit-aap-ee"
+aap_validate_certs: false
+license_manifest_path: "{{ lookup('env', 'LICENSE_MANIFEST_PATH') }}"
+

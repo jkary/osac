@@ -1,3 +1,4 @@
 *.env
 quay-pull-secret.env
 dockerconfig.json
+*.zip

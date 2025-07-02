@@ -23,10 +23,17 @@ namePrefix: dev-
 secretGenerator:
   - name: config-as-code-ig
     files: 
-      - config-as-code-ig.yaml
-  # - name: cloudkit-admin-secret
-  #   literals:  
-  #     -
+    - vars.yaml=config-as-code-ig.yaml
+    - license.zip=License.zip
+  - name: quay-pull-secret
+    type: kubernetes.io/dockerconfigjson
+    files:
+      - .dockerconfigjson=dockerconfig.json
+  - name: cloudkit-admin-password
+    literals:
+      - password=placeholder
+    options:
+      disableNameSuffixHash: true
   
 replacements:
   - source:
@@ -38,53 +45,53 @@ replacements:
           kind: Job
         fieldPaths:
           - spec.template.spec.containers.*.envFrom.*.secretRef.name
-  # - source:
-  #     kind: Secret
-  #     name: cloudkit-admin-secret
-  #     fieldPath: metadata.name
-  #   targets:
-  #     - select:
-  #         kind: Job
-  #       fieldPaths:
-  #         - spec.template.spec.containers.*.env.*.valueFrom.secretKeyRef.name
+  - source:
+      kind: Secret
+      name: cloudkit-admin-password
+      fieldPath: metadata.name
+    targets:
+      - select:
+          kind: Job
+        fieldPaths:
+          - spec.template.spec.containers.*.env.[name=AAP_PASSWORD].valueFrom.secretKeyRef.name
+  - source:
+      kind: OperatorGroup
+      name: ansible-automation-platform-operator
+      fieldPath: metadata.namespace
+    targets:
+      - select:
+          kind: OperatorGroup
+          name: ansible-automation-platform-operator
+        fieldPaths:
+          - spec.targetNamespaces.0
 
 patches:
 - patch: |-
     - op: replace
       path: /spec/template/spec/containers/0/image
       value: quay.io/rh-ee-jkary/cloudkit-aap-ee:latest
+    - op: add
+      path: /spec/template/spec/initContainers
+      value:
+        - name: wait-for-aap
+          image: registry.redhat.io/ubi8/ubi-minimal:latest
+          command:
+            - /bin/sh
+            - -c
+            - |
+              echo "Waiting for AAP controller to be ready..."
+              microdnf install -y curl
+              for i in $(seq 1 30); do
+                echo "Attempt $i/30: Checking AAP controller readiness..."
+                if curl -s -k -f https://dev-cloudkit-controller-foobar.apps.acm.local.lab/api/v2/ping/ | grep -q '"version"'; then
+                  echo "AAP controller is ready!"
+                  exit 0
+                fi
+                echo "Controller not ready, waiting 60 seconds..."
+                sleep 60
+              done
+              echo "Timeout waiting for AAP controller"
+              exit 1
   target:
     kind: Job
     name: aap-bootstrap
-# - patch: |-
-#     - op: replace
-#       path: /stringData/vars.yaml
-#       value: |-
-#         ---
-#         aap_hostname: 
-#         aap_username: "{{ lookup('env', 'AAP_USERNAME') }}"
-#         aap_password: "{{ lookup('env', 'AAP_PASSWORD') }}"
-#         aap_organization_name: ...
-#         aap_project_name: ...
-#         aap_project_git_uri: ...
-#         aap_project_git_branch: ...
-#         aap_ee_image: ...
-#         aap_validate_certs: ...
-#         license_manifest_path: "{{ lookup('env', 'LICENSE_MANIFEST_PATH') }}"
-#   target:
-#     kind: Secret
-#     name: config-as-code-ig
-# - patch: |-
-#     - op: replace
-#       path: /data/license.zip
-#       value: ""
-#   target:
-#     kind: Secret
-#     name: config-as-code-ig
-# - patch: |-
-#     - op: replace
-#       path: /spec/template/spec/containers/0/image
-#       value: quay.io/rh-ee-jkary/cloudkit-aap-ee:latest
-#   target:
-#     kind: Job
-#     name: aap-bootstrap

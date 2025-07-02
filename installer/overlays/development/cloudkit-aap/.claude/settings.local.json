@@ -3,7 +3,10 @@
     "allow": [
       "Bash(kubectl kustomize:*)",
       "Bash(oc delete:*)",
-      "Bash(oc apply:*)"
+      "Bash(oc apply:*)",
+      "Bash(oc get pods:*)",
+      "Bash(oc logs:*)",
+      "Bash(oc get secrets:*)"
     ],
     "deny": []
   }

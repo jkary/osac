@@ -8,7 +8,7 @@ spec:
   template:
     spec:
       containers:
-        - image: cloudkit-aap-ee:latest
+        - image: quay.io/rh-ee-jkary/cloudkit-aap-ee:latest
           name: bootstrap
           args:
             - ansible-playbook
