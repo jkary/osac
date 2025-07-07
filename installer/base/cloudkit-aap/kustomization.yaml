@@ -5,6 +5,7 @@ metadata:
   name: cloudkit-aap-base
 
 resources:
+  - ../shared
   - aap_install.yaml
   - aap.yaml
   - cloudkit_env.yaml
