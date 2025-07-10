@@ -21,10 +21,16 @@ namespace: foobar
 namePrefix: dev-
 
 secretGenerator:
-  - name: config-as-code-ig
-    files: 
-    - vars.yaml=config-as-code-ig.yaml
+  - name: foo-bar-config-as-code-ig
+    envs:
+    - config-as-code-ig.yaml
+    options:
+      disableNameSuffixHash: true
+  - name: foo-bar-config-as-code-manifest-ig
+    files:
     - license.zip=License.zip
+    options:
+      disableNameSuffixHash: true
   - name: quay-pull-secret
     type: kubernetes.io/dockerconfigjson
     files:
@@ -38,13 +44,22 @@ secretGenerator:
 replacements:
   - source:
       kind: Secret
-      name: config-as-code-ig
+      name: foo-bar-config-as-code-ig
       fieldPath: metadata.name
     targets:
       - select:
           kind: Job
         fieldPaths:
           - spec.template.spec.containers.*.envFrom.*.secretRef.name
+  - source:
+      kind: Secret
+      name: foo-bar-config-as-code-manifest-ig
+      fieldPath: metadata.name
+    targets:
+      - select:
+          kind: Job
+        fieldPaths:
+          - spec.template.spec.volumes.[name=config-as-code-manifest-volume].secret.secretName
   - source:
       kind: Secret
       name: cloudkit-admin-password

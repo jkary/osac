@@ -25,6 +25,14 @@ spec:
                 secretKeyRef:
                   name: cloudkit-admin-password
                   key: password
+          volumeMounts:
+            - name: config-as-code-manifest-volume
+              mountPath: /var/secrets/config-as-code-manifest
+              readOnly: true
+      volumes:
+        - name: config-as-code-manifest-volume
+          secret:
+            secretName: config-as-code-manifest-ig
       imagePullSecrets:
         - name: quay-pull-secret
       restartPolicy: Never

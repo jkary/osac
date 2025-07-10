@@ -1,12 +1,9 @@
----
-aap_hostname: localhost
-aap_username: "{{ lookup('env', 'AAP_USERNAME') }}"
-aap_password: "{{ lookup('env', 'AAP_PASSWORD') }}"
-aap_organization_name: foo
-aap_project_name: bar
-aap_project_git_uri: ...
-aap_project_git_branch: ...
-aap_ee_image: "quay.io/rh-ee-jkary/cloudkit-aap-ee"
-aap_validate_certs: false
-license_manifest_path: "{{ lookup('env', 'LICENSE_MANIFEST_PATH') }}"
+AAP_HOSTNAME=localhost
+AAP_VALIDATE_CERTS=false
+AAP_ORGANIZATION_NAME=foo
+AAP_PROJECT_NAME=bar
+AAP_PROJECT_GIT_URI=https://github.com/innabox/cloudkit-aap
+AAP_PROJECT_GIT_BRANCH=main
+AAP_EE_IMAGE=quay.io/rh-ee-jkary/cloudkit-aap-ee
+LICENSE_MANIFEST_PATH=/var/secrets/config-as-code-manifest/license.zip
 
