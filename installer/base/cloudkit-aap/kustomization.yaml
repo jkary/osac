@@ -10,7 +10,6 @@ resources:
   - aap.yaml
   - cloudkit_env.yaml
   - job.yaml
-  - image_secret.yaml
 
 # Common annotations with naming metadata
 commonAnnotations:
