@@ -1,0 +1,63 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+metadata:
+  name: cloudkit-operator-development
+
+# Development environment annotations
+commonAnnotations:
+  environment: development
+
+labels:
+  - includeSelectors: true
+    pairs:
+      environment: development
+      app.kubernetes.io/managed-by: kustomize
+
+resources:
+- ../../../base/cloudkit-operator
+
+namespace: cloudkit-operator-dev
+namePrefix: dev-
+
+secretGenerator:
+  - name: quay-pull-secret
+    type: kubernetes.io/dockerconfigjson
+    files:
+      - .dockerconfigjson=dockerconfig.json
+    options:
+      disableNameSuffixHash: true
+    behavior: replace
+
+images:
+  - name: controller
+    newName: quay.io/rh-ee-jkary/cloudkit-operator
+    newTag: latest
+
+patches:
+- patch: |-
+    - op: replace
+      path: /spec/replicas
+      value: 1
+    - op: replace
+      path: /spec/template/spec/containers/0/resources/limits/cpu
+      value: "200m"
+    - op: replace
+      path: /spec/template/spec/containers/0/resources/limits/memory
+      value: "256Mi"
+    - op: add
+      path: /spec/template/spec/containers/0/env/-
+      value:
+        name: LOG_LEVEL
+        value: debug
+  target:
+    kind: Deployment
+    name: controller-manager
+
+- patch: |-
+    - op: replace
+      path: /metadata/name
+      value: cloudkit-operator-dev
+  target:
+    kind: Namespace
+    name: cloudkit 
