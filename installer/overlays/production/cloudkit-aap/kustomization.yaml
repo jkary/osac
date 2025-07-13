@@ -4,11 +4,7 @@ kind: Kustomization
 metadata:
   name: cloudkit-aap-production
 
-resources:
-- ../../../base/cloudkit-aap
-
-# Production naming convention
-namePrefix: prod-
+# Resources and namespace/namePrefix handled by parent production kustomization
 
 # Production environment annotations
 commonAnnotations:

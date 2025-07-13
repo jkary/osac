@@ -1,0 +1,57 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+metadata:
+  name: cloudkit-development-unified
+
+# Development environment annotations
+commonAnnotations:
+  environment: development
+
+labels:
+- includeSelectors: true
+  pairs:
+    app.kubernetes.io/managed-by: kustomize
+    environment: development
+
+# Include base resources (cloudkit-aap, cloudkit-operator, shared)
+resources:
+- ../../base
+
+images:
+- name: quay.io/innabox/cloudkit-operator
+  newName: quay.io/rh-ee-jkary/cloudkit-operator
+  newTag: latest
+
+namespace: foobar
+namePrefix: dev-
+
+# Secret generators for both components
+secretGenerator:
+- files:
+  - .dockerconfigjson=dockerconfig.json
+  name: quay-pull-secret
+  type: kubernetes.io/dockerconfigjson
+  options:
+    disableNameSuffixHash: true
+- name: bar-config-as-code-ig
+  envs:
+  - cloudkit-aap/config-as-code-ig.yaml
+  options:
+    disableNameSuffixHash: true
+- name: bar-config-as-code-manifest-ig
+  files:
+  - license.zip=cloudkit-aap/License.zip
+  options:
+    disableNameSuffixHash: true
+- name: cloudkit-admin-password
+  literals:
+    - password=placeholder
+  options:
+    disableNameSuffixHash: true
+- name: cloudkit-eda-admin-password
+  literals:
+    - password=placeholder
+  options:
+    disableNameSuffixHash: true
+

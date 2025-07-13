@@ -1,4 +1,3 @@
----
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -8,32 +7,41 @@ spec:
   template:
     spec:
       containers:
-        - image: quay.io/rh-ee-jkary/cloudkit-aap-ee:latest
-          name: bootstrap
-          args:
-            - ansible-playbook
-            - "cloudkit.config_as_code.subscription"
-            - "cloudkit.config_as_code.configure"
-          envFrom:
-            - secretRef:
-                name: config-as-code-ig
-          env:
-            - name: AAP_USERNAME
-              value: admin
-            - name: AAP_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: cloudkit-admin-password
-                  key: password
-          volumeMounts:
-            - name: config-as-code-manifest-volume
-              mountPath: /var/secrets/config-as-code-manifest
-              readOnly: true
-      volumes:
+      - image: quay.io/rh-ee-jkary/cloudkit-aap-ee:latest
+        name: bootstrap
+        args:
+        - ansible-playbook
+        - cloudkit.config_as_code.subscription
+        - cloudkit.config_as_code.configure
+        envFrom:
+        - secretRef:
+            name: bar-config-as-code-ig
+        env:
+        - name: AAP_USERNAME
+          value: admin
+        - name: AAP_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: dev-cloudkit-admin-password
+              key: password
+        - name: AAP_EDA_USERNAME
+          value: admin
+        - name: AAP_EDA_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: dev-cloudkit-eda-admin-password
+              key: password
+        - name: LICENSE_MANIFEST_PATH
+          value: /var/secrets/config-as-code-manifest/license.zip
+        volumeMounts:
         - name: config-as-code-manifest-volume
-          secret:
-            secretName: config-as-code-manifest-ig
+          mountPath: /var/secrets/config-as-code-manifest
+          readOnly: true
+      volumes:
+      - name: config-as-code-manifest-volume
+        secret:
+          secretName: bar-config-as-code-manifest-ig
       imagePullSecrets:
-        - name: quay-pull-secret
+      - name: quay-pull-secret
       restartPolicy: Never
-  backoffLimit: 4
+  backoffLimit: 20

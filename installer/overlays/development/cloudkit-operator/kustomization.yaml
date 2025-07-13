@@ -15,24 +15,21 @@ labels:
       app.kubernetes.io/managed-by: kustomize
 
 resources:
-- ../../../base/cloudkit-operator
+  - ../../../base/cloudkit-operator
 
-namespace: cloudkit-operator-dev
-namePrefix: dev-
+# secretGenerator:
+#   - name: quay-pull-secret
+#     type: kubernetes.io/dockerconfigjson
+#     files:
+#       - .dockerconfigjson=dockerconfig.json
+#     options:
+#       disableNameSuffixHash: true
+#     behavior: replace
 
-secretGenerator:
-  - name: quay-pull-secret
-    type: kubernetes.io/dockerconfigjson
-    files:
-      - .dockerconfigjson=dockerconfig.json
-    options:
-      disableNameSuffixHash: true
-    behavior: replace
-
-images:
-  - name: controller
-    newName: quay.io/rh-ee-jkary/cloudkit-operator
-    newTag: latest
+# images:
+#   - name: quay.io/innabox/cloudkit-operator
+#     newName: quay.io/rh-ee-jkary/cloudkit-operator
+#     newTag: latest
 
 patches:
 - patch: |-

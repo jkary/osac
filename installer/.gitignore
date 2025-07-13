@@ -28,3 +28,4 @@ local/
 *.local.yaml
 
 dockerconfig.json
+components/**

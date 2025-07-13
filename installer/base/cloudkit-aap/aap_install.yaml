@@ -4,9 +4,7 @@ kind: OperatorGroup
 metadata:
   name: ansible-automation-platform-operator
   namespace: cloudkit
-spec:
-  targetNamespaces:
-    - cloudkit
+spec: {}
 ---
 apiVersion: operators.coreos.com/v1alpha1
 kind: Subscription

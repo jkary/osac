@@ -14,32 +14,9 @@ labels:
       environment: development
       app.kubernetes.io/managed-by: kustomize
 
-resources:
-- ../../../base/cloudkit-aap
+# Resources and namespace/namePrefix handled by parent development kustomization
 
-namespace: foobar
-namePrefix: dev-
-
-secretGenerator:
-  - name: foo-bar-config-as-code-ig
-    envs:
-    - config-as-code-ig.yaml
-    options:
-      disableNameSuffixHash: true
-  - name: foo-bar-config-as-code-manifest-ig
-    files:
-    - license.zip=License.zip
-    options:
-      disableNameSuffixHash: true
-  - name: quay-pull-secret
-    type: kubernetes.io/dockerconfigjson
-    files:
-      - .dockerconfigjson=dockerconfig.json
-  - name: cloudkit-admin-password
-    literals:
-      - password=placeholder
-    options:
-      disableNameSuffixHash: true
+# Secret generators moved to parent development kustomization
   
 replacements:
   - source:
@@ -69,6 +46,15 @@ replacements:
           kind: Job
         fieldPaths:
           - spec.template.spec.containers.*.env.[name=AAP_PASSWORD].valueFrom.secretKeyRef.name
+  - source:
+      kind: Secret
+      name: cloudkit-eda-admin-password
+      fieldPath: metadata.name
+    targets:
+      - select:
+          kind: Job
+        fieldPaths:
+          - spec.template.spec.containers.*.env.[name=AAP_EDA_PASSWORD].valueFrom.secretKeyRef.name
   - source:
       kind: OperatorGroup
       name: ansible-automation-platform-operator
