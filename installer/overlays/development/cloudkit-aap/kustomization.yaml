@@ -14,57 +14,65 @@ labels:
       environment: development
       app.kubernetes.io/managed-by: kustomize
 
-# Resources and namespace/namePrefix handled by parent development kustomization
+resources:
+  - ../../../base/cloudkit-aap
 
 # Secret generators moved to parent development kustomization
-  
+secretGenerator:
+- name: bar-config-as-code-ig
+  envs:
+  - config-as-code-ig.yaml
+  options:
+    disableNameSuffixHash: true
+- name: bar-config-as-code-manifest-ig
+  files:
+  - license.zip=License.zip
+  options:
+    disableNameSuffixHash: true
+
 replacements:
   - source:
       kind: Secret
-      name: foo-bar-config-as-code-ig
+      name: bar-config-as-code-ig
       fieldPath: metadata.name
     targets:
       - select:
           kind: Job
         fieldPaths:
-          - spec.template.spec.containers.*.envFrom.*.secretRef.name
-  - source:
-      kind: Secret
-      name: foo-bar-config-as-code-manifest-ig
-      fieldPath: metadata.name
-    targets:
-      - select:
-          kind: Job
-        fieldPaths:
-          - spec.template.spec.volumes.[name=config-as-code-manifest-volume].secret.secretName
-  - source:
-      kind: Secret
-      name: cloudkit-admin-password
-      fieldPath: metadata.name
-    targets:
-      - select:
-          kind: Job
-        fieldPaths:
-          - spec.template.spec.containers.*.env.[name=AAP_PASSWORD].valueFrom.secretKeyRef.name
-  - source:
-      kind: Secret
-      name: cloudkit-eda-admin-password
-      fieldPath: metadata.name
-    targets:
-      - select:
-          kind: Job
-        fieldPaths:
-          - spec.template.spec.containers.*.env.[name=AAP_EDA_PASSWORD].valueFrom.secretKeyRef.name
-  - source:
-      kind: OperatorGroup
-      name: ansible-automation-platform-operator
-      fieldPath: metadata.namespace
-    targets:
-      - select:
-          kind: OperatorGroup
-          name: ansible-automation-platform-operator
-        fieldPaths:
-          - spec.targetNamespaces.0
+          - spec.template.spec.containers.0.envFrom.0.secretRef.name
+  #
+  # Don't need this because secretGenerator handles it.
+  #
+  # - source:
+  #     kind: Secret
+  #     name: bar-config-as-code-manifest-ig
+  #     fieldPath: metadata.name
+  #   targets:
+  #     - select:
+  #         kind: Job
+  #       fieldPaths:
+  #         - spec.template.spec.volumes.[name=config-as-code-manifest-volume].secret.secretName
+  #  
+  # We cannot touch the secrets for AAP because then AAP can't update them.
+  #
+  # - source:
+  #     kind: Secret
+  #     name: cloudkit-admin-password
+  #     fieldPath: metadata.name
+  #   targets:
+  #     - select:
+  #         kind: Job
+  #       fieldPaths:
+  #         - spec.template.spec.containers.*.env.[name=AAP_PASSWORD].valueFrom.secretKeyRef.name
+  # - source:
+  #     kind: Secret
+  #     name: cloudkit-eda-admin-password
+  #     fieldPath: metadata.name
+  #   targets:
+  #     - select:
+  #         kind: Job
+  #       fieldPaths:
+  #         - spec.template.spec.containers.*.env.[name=AAP_EDA_PASSWORD].valueFrom.secretKeyRef.name
 
 patches:
 - patch: |-
@@ -84,12 +92,13 @@ patches:
               microdnf install -y curl
               for i in $(seq 1 30); do
                 echo "Attempt $i/30: Checking AAP controller readiness..."
-                if curl -s -k -f https://dev-cloudkit-controller-foobar.apps.acm.local.lab/api/v2/ping/ | grep -q '"version"'; then
+                if curl -skf https://dev-cloudkit-foobar.apps.acm.local.lab/api/gateway/v1/ping/ | grep -q 'good'; 
+                then
                   echo "AAP controller is ready!"
                   exit 0
                 fi
-                echo "Controller not ready, waiting 60 seconds..."
-                sleep 60
+                echo "Controller not ready, waiting 600 seconds..."
+                sleep 600
               done
               echo "Timeout waiting for AAP controller"
               exit 1

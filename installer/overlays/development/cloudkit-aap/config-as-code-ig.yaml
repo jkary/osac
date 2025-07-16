@@ -1,4 +1,4 @@
-AAP_HOSTNAME=dev-cloudkit-foobar.apps.acm.local.lab
+AAP_HOSTNAME=https://dev-cloudkit-foobar.apps.acm.local.lab
 AAP_VALIDATE_CERTS=false
 AAP_ORGANIZATION_NAME=dev
 AAP_PROJECT_NAME=bar

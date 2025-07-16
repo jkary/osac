@@ -15,7 +15,7 @@ spec:
         - cloudkit.config_as_code.configure
         envFrom:
         - secretRef:
-            name: bar-config-as-code-ig
+            name: config-as-code-ig
         env:
         - name: AAP_USERNAME
           value: admin
@@ -31,8 +31,6 @@ spec:
             secretKeyRef:
               name: dev-cloudkit-eda-admin-password
               key: password
-        - name: LICENSE_MANIFEST_PATH
-          value: /var/secrets/config-as-code-manifest/license.zip
         volumeMounts:
         - name: config-as-code-manifest-volume
           mountPath: /var/secrets/config-as-code-manifest
@@ -44,4 +42,4 @@ spec:
       imagePullSecrets:
       - name: quay-pull-secret
       restartPolicy: Never
-  backoffLimit: 20
+  backoffLimit: 4

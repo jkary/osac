@@ -16,11 +16,17 @@ labels:
 
 # Include base resources (cloudkit-aap, cloudkit-operator, shared)
 resources:
-- ../../base
+- ../../base/shared
+- ./cloudkit-aap
+- ./cloudkit-operator
+- ./fulfillment-service
 
 images:
 - name: quay.io/innabox/cloudkit-operator
   newName: quay.io/rh-ee-jkary/cloudkit-operator
+  newTag: latest
+- name: ghcr.io/innabox/fulfillment-service
+  newName: quay.io/rh-ee-jkary/fulfillment-service
   newTag: latest
 
 namespace: foobar
@@ -34,24 +40,3 @@ secretGenerator:
   type: kubernetes.io/dockerconfigjson
   options:
     disableNameSuffixHash: true
-- name: bar-config-as-code-ig
-  envs:
-  - cloudkit-aap/config-as-code-ig.yaml
-  options:
-    disableNameSuffixHash: true
-- name: bar-config-as-code-manifest-ig
-  files:
-  - license.zip=cloudkit-aap/License.zip
-  options:
-    disableNameSuffixHash: true
-- name: cloudkit-admin-password
-  literals:
-    - password=placeholder
-  options:
-    disableNameSuffixHash: true
-- name: cloudkit-eda-admin-password
-  literals:
-    - password=placeholder
-  options:
-    disableNameSuffixHash: true
-

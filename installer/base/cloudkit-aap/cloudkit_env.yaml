@@ -17,6 +17,24 @@ subjects:
   - kind: ServiceAccount
     name: cloudkit-aap-cloudkit-sa
     namespace: cloudkit
+---
+#
+# We cannot create the secret for AAP becuase it will then
+# be prevented from adding the real password value when deploying.
+#
+# apiVersion: v1
+# kind: Secret
+# metadata:
+#   name: cloudkit-admin-password
+#   namespace: cloudkit
+# type: Opaque
+# ---
+# apiVersion: v1
+# kind: Secret
+# metadata:
+#   name: cloudkit-eda-admin-password
+#   namespace: cloudkit
+# type: Opaque
 # ---
 # apiVersion: v1
 # kind: Secret
@@ -25,8 +43,17 @@ subjects:
 #   namespace: cloudkit
 # type: Opaque
 # data:
-#   vars.yaml: {} 
-#   license.zip: {}
+#   vars.yaml: ""
+# Don't want this because secretGenerator takes care of it.
+# ---
+# apiVersion: v1
+# kind: Secret
+# metadata:
+#   name: bar-config-as-code-manifest-ig
+#   namespace: cloudkit
+# type: Opaque
+# data:
+#   license.zip: ""
 ---
 apiVersion: v1
 kind: Secret
