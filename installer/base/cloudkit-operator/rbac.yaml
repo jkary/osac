@@ -64,6 +64,7 @@ rules:
   - secrets
   - services
   - serviceaccounts
+  - namespaces
   verbs:
   - create
   - delete
@@ -98,9 +99,46 @@ rules:
   - update
   - watch
 - apiGroups:
+  - cloudkit.openshift.io
+  resources:
+  - '*'
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
   - batch
   resources:
   - jobs
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - rbac.authorization.k8s.io
+  resources:
+  - rolebindings
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - hypershift.openshift.io
+  resources:
+  - hostedclusters
+  - nodepools
   verbs:
   - create
   - delete

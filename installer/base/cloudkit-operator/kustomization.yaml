@@ -8,6 +8,7 @@ resources:
   - rbac.yaml
   - manager.yaml
   - crd.yaml
+  - clusterorder-crd.yaml
   - manager-config.yaml
   - feature-gates.yaml
   - logging-config.yaml

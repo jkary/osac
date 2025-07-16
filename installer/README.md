@@ -1,348 +1,376 @@
-# CloudKit AAP - Ansible Automation Platform Integration
+# CloudKit Installer
 
-This repository contains Kubernetes/OpenShift deployment configurations for CloudKit AAP (Ansible Automation Platform) integration, which provides automated cluster lifecycle management through Event Driven Automation.
+This repository contains Kubernetes/OpenShift deployment configurations for the CloudKit platform, providing comprehensive cluster lifecycle management through multiple integrated components.
 
 ## Overview
 
-CloudKit AAP integrates with Red Hat Ansible Automation Platform to provide:
+CloudKit is a comprehensive platform that provides:
 
-- **Automated Cluster Provisioning** - Creates OpenShift clusters through AAP job templates
-- **Cluster Lifecycle Management** - Handles cluster updates, scaling, and decommissioning
+- **Cluster Lifecycle Management** - Automated cluster provisioning, scaling, and decommissioning
 - **Event Driven Automation** - Responds to cluster events and webhook notifications
-- **Configuration as Code** - Manages cluster configurations through Ansible playbooks
+- **Service Management** - Fulfillment services for cluster operations
+- **Configuration as Code** - Manages cluster configurations through Ansible playbooks and Kubernetes manifests
 
 ## Architecture
 
-The CloudKit AAP solution consists of:
+The CloudKit platform consists of three main components:
 
-1. **AnsibleAutomationPlatform** - Custom resource for AAP deployment
-2. **Bootstrap Job** - Initial configuration of AAP resources
-3. **Configuration Secrets** - AAP credentials and playbook settings
-4. **Image Secrets** - Container registry credentials for execution environments
+1. **CloudKit AAP (Ansible Automation Platform)** - Automated cluster provisioning and lifecycle management
+2. **CloudKit Operator** - Kubernetes operator for cluster order management and HyperShift integration
+3. **Fulfillment Service** - Backend service for cluster fulfillment operations with PostgreSQL database
 
 ## Prerequisites
 
-Before deploying CloudKit AAP, ensure you have:
+Before deploying CloudKit, ensure you have:
 
-- OpenShift cluster with admin access
+### Core Requirements
+- OpenShift cluster with admin access (version 4.17+ recommended)
+- `oc` CLI configured with cluster admin privileges
+- `kustomize` CLI tool (or use `oc apply -k`)
+
+### Certificate Management
+- **cert-manager** operator installed and configured
+- Certificate issuers configured for TLS certificate management
+- Required for secure communication between components
+
+### HyperShift Integration
+- **MultiCluster Engine (MCE)** installed with HyperShift support
+- HyperShift operator deployed and configured
+- Required for hosted cluster management capabilities
+
+### Component-Specific Prerequisites
+
+#### CloudKit AAP
 - **Red Hat Ansible Automation Platform Operator** installed
 - **Red Hat Advanced Cluster Management (ACM)** installed (for cluster provisioning)
-- `oc` CLI configured
-- `kustomize` CLI tool (or use `oc apply -k`)
-- Valid AAP license manifest
+- **Valid AAP license manifest** - Download from [Red Hat Customer Portal](https://access.redhat.com/downloads/content/480/ver=2.4/rhel---9/2.4/x86_64/product-software) as `License.zip`
 - Container registry credentials for execution environments
+
+#### CloudKit Operator
+- **HyperShift CRDs** (`HostedCluster`, `NodePool`) available
+- **ClusterOrder CRDs** deployed
+- Proper RBAC permissions for cluster-wide operations
+
+#### Fulfillment Service
+- **PostgreSQL** for database storage
+- **TLS certificates** for secure database connections
+- **Private registry access** for container images
 
 ## Repository Structure
 
 ```
-osc-config/
-├── base/cloudkit-aap/                  # Base Kustomize configurations
-│   ├── aap.yaml                        # AnsibleAutomationPlatform custom resource
-│   ├── aap_install.yaml                # AAP subscription and operator resources
-│   ├── cloudkit_env.yaml               # Environment configuration
-│   ├── job.yaml                        # Bootstrap job for initial setup
-│   ├── image_secret.yaml               # Container registry credentials
-│   └── kustomization.yaml              # Base kustomization
-├── overlays/
-│   ├── development/cloudkit-aap/       # Development environment overlay
-│   │   ├── kustomization.yaml          # Development kustomization with patches
-│   │   ├── fix-ansibleautomationplatform.yaml  # AAP resource fixes
-│   │   ├── license-patch.yaml          # License configuration patch
-│   │   ├── secret-patch.yaml           # Development credentials patch
-│   │   ├── quay-pull-secret.env        # Development registry credentials
-│   │   └── skip-nameprefix.yaml        # Name prefix configuration
-│   └── production/cloudkit-aap/        # Production environment overlay
-│       ├── kustomization.yaml          # Production kustomization with patches
-│       ├── fix-ansibleautomationplatform.yaml  # Production AAP resource configuration
-│       ├── license-patch.yaml          # Production license patch
-│       ├── secret-patch.yaml           # Production credentials patch
-│       ├── quay-pull-secret.env        # Production registry credentials
-│       └── skip-nameprefix.yaml        # Production name prefix configuration
+cloudkit-installer/
+├── base/                           # Base Kustomize configurations
+│   ├── shared/                     # Shared namespace and resources
+│   ├── cloudkit-aap/              # Ansible Automation Platform
+│   ├── cloudkit-operator/         # CloudKit Operator
+│   └── fulfillment-service/       # Fulfillment Service
+│       ├── ca/                    # Certificate Authority setup
+│       ├── database/              # PostgreSQL database
+│       ├── service/               # Main service deployment
+│       ├── controller/            # Controller component
+│       ├── admin/                 # Admin service account
+│       └── client/                # Client service account
+├── overlays/                      # Environment-specific overlays
+│   └── development/               # Development environment
+│       ├── cloudkit-aap/
+│       ├── cloudkit-operator/
+│       └── fulfillment-service/
 └── README.md
 ```
 
-## Base Components (base/cloudkit-aap/)
+## Components
 
-### aap.yaml
-AnsibleAutomationPlatform custom resource configuration:
-- **Controller**: Enabled for job template management
-- **EDA (Event Driven Automation)**: Enabled for webhook processing
-- **Hub**: Disabled (not required for this use case)
-- **Lightspeed**: Disabled (AI assistance not required)
+### 1. CloudKit AAP (Ansible Automation Platform)
 
-### aap_install.yaml
-AAP operator installation and subscription resources.
+Provides automated cluster provisioning and lifecycle management through:
+- **Controller**: Job template management and execution
+- **EDA (Event Driven Automation)**: Webhook processing and event handling
+- **Bootstrap Job**: Initial configuration of AAP resources
 
-### cloudkit_env.yaml
-Environment configuration for AAP integration including:
-- OpenShift cluster connection settings
-- Webhook endpoints
-- Job template configurations
+### 2. CloudKit Operator
 
-### job.yaml
-Bootstrap job that performs initial AAP configuration:
-- Creates AAP organizations and projects
-- Sets up job templates for cluster operations
-- Configures inventories and credentials
-- Establishes EDA rulebook activations
+Kubernetes operator that manages:
+- **ClusterOrder CRDs**: Custom resources for cluster provisioning requests
+- **HyperShift Integration**: Management of hosted clusters
+- **Namespace Management**: Automatic namespace creation and RBAC
+- **Service Account Management**: Cluster-specific service accounts
 
-### image_secret.yaml
-Container registry pull secrets for AAP execution environments.
+### 3. Fulfillment Service
 
-## Configuration
+Backend service providing:
+- **Database**: PostgreSQL for persistent storage
+- **Service**: Main fulfillment service with gRPC API
+- **Controller**: Fulfillment operation management
+- **Gateway**: HTTP/gRPC gateway with Envoy proxy
 
-### Development Environment (overlays/development/cloudkit-aap/)
+## Installation
 
-The development overlay provides:
+### Step 1: Install Prerequisites
 
-**Environment Variables**:
-- `AAP_USERNAME` - AAP administrator username
-- `AAP_PASSWORD` - AAP administrator password  
-- `LICENSE_MANIFEST_PATH` - Path to AAP license file
-
-**Key Features**:
-- Uses environment variable substitution for credentials
-- Configured for development execution environment images
-- Simplified naming without prefixes
-- Debug-level logging enabled
-
-**Configuration Files**:
-```yaml
-# secret-patch.yaml example
-aap_hostname: aap.dev.example.com
-aap_username: "{{ lookup('env', 'AAP_USERNAME') }}"
-aap_password: "{{ lookup('env', 'AAP_PASSWORD') }}"
-aap_organization_name: cloudkit-dev
-aap_project_name: cloudkit-aap-dev
-aap_project_git_uri: https://github.com/organization/cloudkit-aap.git
-aap_project_git_branch: develop
-aap_ee_image: quay.io/rh-ee-jkary/cloudkit-aap-ee:latest
-aap_validate_certs: false
-```
-
-### Production Environment (overlays/production/cloudkit-aap/)
-
-The production overlay provides:
-
-**Environment Variables**:
-- `AAP_USERNAME` - AAP administrator username
-- `AAP_PASSWORD` - AAP administrator password
-- `LICENSE_MANIFEST_PATH` - Path to AAP license file
-
-**Key Features**:
-- Production-grade AAP configuration with increased replicas
-- Production execution environment images
-- Resource naming with `prod-` prefix
-- SSL certificate validation enabled
-- Production-level logging
-
-**Configuration Files**:
-```yaml
-# secret-patch.yaml example
-aap_hostname: aap.prod.example.com
-aap_username: "{{ lookup('env', 'AAP_USERNAME') }}"
-aap_password: "{{ lookup('env', 'AAP_PASSWORD') }}"
-aap_organization_name: prod-cloudkit
-aap_project_name: cloudkit-aap-prod
-aap_project_git_uri: https://github.com/organization/cloudkit-aap.git
-aap_project_git_branch: main
-aap_ee_image: quay.io/organization/cloudkit-aap-ee:latest
-aap_validate_certs: true
-```
-
-## Getting Started
-
-### Clone and Initialize
-
+#### Install cert-manager
 ```bash
-# Clone the repository
-git clone https://github.com/your-org/osc-config.git
-cd osc-config
+# Install cert-manager operator
+oc apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.13.0/cert-manager.yaml
 
-# Initialize git submodules (if present)
-git submodule update --init --recursive
+# Wait for cert-manager to be ready
+oc wait --for=condition=Available deployment/cert-manager -n cert-manager --timeout=300s
 ```
 
-### Development Deployment
+#### Install MultiCluster Engine with HyperShift
+```bash
+# Create MCE namespace
+oc new-project multicluster-engine
 
+# Install MCE operator
+cat << EOF | oc apply -f -
+apiVersion: operators.coreos.com/v1
+kind: OperatorGroup
+metadata:
+  name: multicluster-engine
+  namespace: multicluster-engine
+spec:
+  targetNamespaces:
+  - multicluster-engine
+---
+apiVersion: operators.coreos.com/v1alpha1
+kind: Subscription
+metadata:
+  name: multicluster-engine
+  namespace: multicluster-engine
+spec:
+  channel: stable-2.8
+  name: multicluster-engine
+  source: redhat-operators
+  sourceNamespace: openshift-marketplace
+EOF
+
+# Create MCE instance
+cat << EOF | oc apply -f -
+apiVersion: multicluster.openshift.io/v1
+kind: MultiClusterEngine
+metadata:
+  name: multiclusterengine
+  namespace: multicluster-engine
+spec:
+  availabilityConfig: Basic
+  targetNamespace: multicluster-engine
+EOF
+
+# Wait for MCE to be ready
+oc wait --for=condition=Available multiclusterengine/multiclusterengine -n multicluster-engine --timeout=600s
+```
+
+### Step 2: Deploy CloudKit Components
+
+#### Development Environment
 ```bash
 # Set required environment variables
 export AAP_USERNAME="admin"
 export AAP_PASSWORD="your-aap-password"
 export LICENSE_MANIFEST_PATH="/path/to/license.zip"
 
-# Update registry credentials
-vi overlays/development/cloudkit-aap/quay-pull-secret.env
+# Deploy all components
+oc apply -k overlays/development/
 
-# Deploy to development environment
-oc apply -k overlays/development/cloudkit-aap
+# Wait for deployment to complete
+oc wait --for=condition=Available deployment/dev-fulfillment-service -n foobar --timeout=300s
+oc wait --for=condition=Available deployment/dev-controller-manager -n foobar --timeout=300s
 ```
 
-### Production Deployment
+## Configuration
 
-**Important**: Configure production credentials and settings before deploying!
+### Environment Variables
+
+For AAP configuration, set these environment variables:
 
 ```bash
-# Set required environment variables
-export AAP_USERNAME="admin"
-export AAP_PASSWORD="your-production-aap-password"
-export LICENSE_MANIFEST_PATH="/path/to/production-license.zip"
-
-# Update production configurations
-vi overlays/production/cloudkit-aap/secret-patch.yaml      # AAP connection settings
-vi overlays/production/cloudkit-aap/quay-pull-secret.env   # Registry credentials
-
-# Deploy to production environment
-oc apply -k overlays/production/cloudkit-aap
+export AAP_USERNAME="admin"              # AAP administrator username
+export AAP_PASSWORD="your-password"      # AAP administrator password
+export LICENSE_MANIFEST_PATH="/path/to/license.zip"  # Path to AAP license
 ```
+
+**Note**: The AAP license file must be named exactly `License.zip` (with capital L) and can be downloaded from the [Red Hat Customer Portal](https://access.redhat.com/downloads/content/480/ver=2.4/rhel---9/2.4/x86_64/product-software). Navigate to your AAP subscription and download the license manifest.
+
+### Registry Credentials
+
+Update container registry credentials in:
+- `overlays/development/dockerconfig.json` for development
+- Include credentials for accessing private registries (quay.io, registry.redhat.io, etc.)
+
+### TLS Certificates
+
+The fulfillment service uses cert-manager for TLS certificate management:
+- CA certificates are automatically generated
+- Service certificates are issued for database connections
+- API certificates are issued for service endpoints
 
 ## Verification
 
 ### Check Deployment Status
 
 ```bash
-# Check AAP pods
-oc get pods -n cloudkit-aap-system
+# Check all pods in the deployment namespace
+oc get pods -n foobar
 
-# Check AAP custom resources
-oc get ansibleautomationplatform -n cloudkit-aap-system
+# Check specific components
+oc get pods -n foobar -l app=fulfillment-service
+oc get pods -n foobar -l app.kubernetes.io/name=cloudkit-operator
+oc get ansibleautomationplatform -n foobar
 
-# Check bootstrap job status
-oc get jobs -n cloudkit-aap-system
-
-# Check services
-oc get services -n cloudkit-aap-system
+# Check certificates
+oc get certificates -n foobar
 ```
 
-### Check Logs
+### Check Component Health
 
 ```bash
-# Bootstrap job logs
-oc logs -n cloudkit-aap-system job/aap-bootstrap -f
+# CloudKit Operator
+oc logs -n foobar deployment/dev-controller-manager -f
 
-# AAP controller logs
-oc logs -n cloudkit-aap-system -l app.kubernetes.io/name=controller -f
+# Fulfillment Service
+oc logs -n foobar deployment/dev-fulfillment-service -c server -f
 
-# AAP EDA logs
-oc logs -n cloudkit-aap-system -l app.kubernetes.io/name=eda -f
+# Database
+oc logs -n foobar statefulset/dev-fulfillment-database -f
+
+# AAP Bootstrap Job
+oc logs -n foobar job/dev-aap-bootstrap -f
 ```
 
-### Verify AAP Configuration
+### Verify Prerequisites
 
 ```bash
-# Check if AAP is accessible
-oc port-forward -n cloudkit-aap-system service/cloudkit-controller-service 8080:80
+# Check cert-manager
+oc get pods -n cert-manager
 
-# Access AAP UI at http://localhost:8080
-# Login with configured credentials
-```
+# Check HyperShift CRDs
+oc get crd | grep hypershift
+oc get crd | grep clusterorder
 
-## Environment Differences
-
-| Aspect | Development | Production |
-|--------|-------------|------------|
-| **AAP Replicas** | 1 controller, 1 EDA | 2 controllers, 2 EDA |
-| **Naming** | No prefix | `prod-` prefix |
-| **SSL Validation** | Disabled | Enabled |
-| **Images** | Development tags | Production/latest tags |
-| **Git Branch** | develop | main |
-| **Logging** | Debug level | Info level |
-| **Credentials** | Environment variables | Environment variables + sealed secrets |
-
-## Security Considerations
-
-### Credential Management
-
-- **Development**: Use environment variables for quick setup
-- **Production**: Consider using external secret management:
-  - OpenShift's built-in secrets
-  - External Secrets Operator
-  - HashiCorp Vault integration
-  - Sealed Secrets
-
-### Network Security
-
-- Configure network policies to restrict AAP access
-- Use TLS for all AAP communications
-- Implement proper RBAC for AAP service accounts
-
-### Container Security
-
-- Use trusted container registry
-- Scan execution environment images for vulnerabilities
-- Implement image pull policies appropriately
-
-## Troubleshooting
-
-### Common Issues
-
-1. **AAP Operator not installing**: Check subscription and operator group
-2. **Bootstrap job failing**: Verify AAP credentials and connectivity
-3. **EDA not receiving webhooks**: Check service endpoints and network policies
-4. **Execution environment pull failures**: Verify registry credentials
-
-### Debug Commands
-
-```bash
-# Check AAP operator status
-oc get subscription -n cloudkit-aap-system
-
-# Check AAP custom resource status
-oc describe ansibleautomationplatform cloudkit -n cloudkit-aap-system
-
-# Check bootstrap job details
-oc describe job aap-bootstrap -n cloudkit-aap-system
-
-# Test service connectivity
-oc run debug --image=nicolaka/netshoot -it --rm -- /bin/bash
-```
-
-### Log Analysis
-
-```bash
-# Get all events in namespace
-oc get events -n cloudkit-aap-system --sort-by=.metadata.creationTimestamp
-
-# Check pod resource usage
-oc top pods -n cloudkit-aap-system
-
-# Describe failing pods
-oc describe pod -n cloudkit-aap-system <pod-name>
+# Check MultiCluster Engine
+oc get multiclusterengine -n multicluster-engine
 ```
 
 ## Customization
-
-### Modifying AAP Configuration
-
-To customize AAP settings:
-
-1. Edit base configurations in `base/cloudkit-aap/`
-2. Test changes in development overlay
-3. Apply changes to production overlay
-4. Validate with `kustomize build` before applying
 
 ### Adding New Environments
 
 To create a new environment overlay:
 
 1. Create new directory under `overlays/`
-2. Copy and modify kustomization.yaml
+2. Copy and modify kustomization.yaml from development
 3. Create environment-specific patch files
 4. Update environment variables and secrets
 
-### Execution Environment Customization
+### Modifying Components
 
-To use custom execution environments:
+Each component can be customized by:
 
-1. Build custom EE with required collections
-2. Push to accessible container registry
-3. Update image references in overlay patches
-4. Update registry credentials if needed
+1. Editing base configurations in `base/component-name/`
+2. Creating overlay patches for environment-specific changes
+3. Testing changes in development overlay first
+4. Validating with `kustomize build` before applying
+
+## Security Considerations
+
+### Certificate Management
+- All inter-service communication uses TLS
+- Certificates are managed by cert-manager
+- CA certificates are automatically rotated
+
+### RBAC
+- Each component has minimal required permissions
+- Service accounts are created per component
+- Cluster-wide permissions are limited to necessary operations
+
+### Network Security
+- Services communicate over TLS
+- Database connections use SSL/TLS
+- Network policies can be applied for additional isolation
+
+## Troubleshooting
+
+### Common Issues
+
+1. **cert-manager not ready**: Ensure cert-manager operator is installed and running
+2. **HyperShift CRDs missing**: Verify MultiCluster Engine is deployed with HyperShift enabled
+3. **Certificate issues**: Check cert-manager logs and certificate status
+4. **Database connection failures**: Verify database certificates and connectivity
+5. **cloudkit-operator CrashLoopBackOff**: Usually indicates missing HyperShift permissions or CRDs not available
+6. **ImagePullBackOff errors**: Verify registry credentials in `dockerconfig.json` and `dev-quay-pull-secret`
+7. **namePrefix conflicts**: Certificate and secret name mismatches due to kustomize namePrefix application
+
+### Debug Commands
+
+```bash
+# Check certificate status
+oc describe certificate -n foobar
+
+# Check certificate issuer status
+oc describe issuer -n foobar
+
+# Check pod events
+oc describe pod -n foobar <pod-name>
+
+# Check service endpoints
+oc get endpoints -n foobar
+
+# Check secrets
+oc get secrets -n foobar
+
+# Check HyperShift CRDs and permissions
+oc get crd | grep hypershift
+oc get clusterrole dev-manager-role -o yaml | grep -A 10 hypershift
+oc get clusterrolebinding dev-manager-rolebinding -o yaml
+
+# Check MultiCluster Engine status
+oc get multiclusterengine -n multicluster-engine
+oc get pods -n multicluster-engine
+oc get pods -n hypershift
+```
+
+### Log Analysis
+
+```bash
+# Get all events in namespace
+oc get events -n foobar --sort-by=.metadata.creationTimestamp
+
+# Check resource usage
+oc top pods -n foobar
+
+# Component-specific logs
+oc logs -n foobar deployment/dev-fulfillment-service -c server --tail=100
+oc logs -n foobar deployment/dev-controller-manager --tail=100
+oc logs -n foobar statefulset/dev-fulfillment-database --tail=100
+```
+
+## Development
+
+### Prerequisites for Development
+
+- Understanding of Kubernetes/OpenShift
+- Familiarity with Kustomize
+- Knowledge of cert-manager and HyperShift
+- Experience with PostgreSQL and gRPC services
+
+### Testing Changes
+
+1. Test in development environment first
+2. Validate with `kustomize build overlays/development/`
+3. Check for resource conflicts
+4. Verify certificate generation
+5. Test service connectivity
 
 ## Support
 
 For issues and questions:
 - Check the troubleshooting section above
-- Review AAP and OpenShift logs
-- Consult Red Hat Ansible Automation Platform documentation
+- Review component logs for error messages
+- Verify prerequisites are properly installed
+- Consult cert-manager and HyperShift documentation
 - Open an issue in the component repository
+
+## License
+
+This project is licensed under the Apache License, Version 2.0.

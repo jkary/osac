@@ -57,4 +57,38 @@ patches:
       value: cloudkit-operator-dev
   target:
     kind: Namespace
-    name: cloudkit 
+    name: cloudkit
+
+# Add HyperShift permissions to ClusterRole
+- patch: |-
+    - op: add
+      path: /rules/-
+      value:
+        apiGroups:
+        - hypershift.openshift.io
+        resources:
+        - hostedclusters
+        - nodepools
+        verbs:
+        - create
+        - delete
+        - get
+        - list
+        - patch
+        - update
+        - watch
+  target:
+    kind: ClusterRole
+    name: manager-role
+
+# Fix ClusterRoleBinding to use correct namespace and service account
+- patch: |-
+    - op: replace
+      path: /subjects/0/namespace
+      value: foobar
+    - op: replace
+      path: /subjects/0/name
+      value: dev-controller-manager
+  target:
+    kind: ClusterRoleBinding
+    name: manager-rolebinding 
