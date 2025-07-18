@@ -51,7 +51,7 @@ patches:
       path: /spec/template/spec/containers/0/env/-
       value:
         name: CLOUDKIT_FULFILLMENT_SERVER_ADDRESS
-        value: dev-fulfillment-api.foobar.svc.cluster.local:8000
+        value: dev-fulfillment-api-foobar.apps.acm.local.lab:443
     - op: add
       path: /spec/template/spec/containers/0/env/-
       value:
@@ -62,6 +62,9 @@ patches:
       value:
         name: CLOUDKIT_CLUSTER_DELETE_WEBHOOK
         value: https://dev-fulfillment-api-foobar.apps.acm.local.lab:443/api/private/v1/cluster-orders
+    - op: add
+      path: /spec/template/spec/containers/0/args/-
+      value: "--grpc-insecure"
   target:
     kind: Deployment
     name: controller-manager

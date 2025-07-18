@@ -10,10 +10,12 @@ This document provides a detailed, step-by-step guide for setting up, configurin
 4. [Configuration](#configuration)
 5. [OpenShift/Kubernetes Deployment](#openshiftkubernetes-deployment)
 6. [gRPC and HTTP/2 Call Flow](#grpc-and-http2-call-flow)
-7. [Networking and Proxy Setup](#networking-and-proxy-setup)
-8. [Real-World Usage Examples](#real-world-usage-examples)
-9. [Troubleshooting](#troubleshooting)
-10. [API Reference](#api-reference)
+7. [Hub Management](#hub-management)
+8. [Cluster Order Management](#cluster-order-management)
+9. [Networking and Proxy Setup](#networking-and-proxy-setup)
+10. [Real-World Usage Examples](#real-world-usage-examples)
+11. [Troubleshooting](#troubleshooting)
+12. [API Reference](#api-reference)
 
 ## Overview
 
@@ -503,6 +505,533 @@ grpc-status: 0
   "template": "simple",
   "state": "PROVISIONING"
 }
+```
+
+## Hub Management
+
+### 1. Understanding Hubs in CloudKit Architecture
+
+**What are Hubs?**
+Hubs are OpenShift/Kubernetes clusters that have been registered with the fulfillment service to act as target environments for cluster provisioning. When you create a cluster through the fulfillment-cli, the system creates a ClusterOrder Custom Resource Definition (CRD) in one of the registered hubs, where the cloudkit-operator processes the request.
+
+**Hub Architecture Flow:**
+```mermaid
+graph TD
+    A[fulfillment-cli] -->|Create cluster request| B[fulfillment-service]
+    B -->|Store cluster request| C[PostgreSQL Database]
+    B -->|Notify| D[fulfillment-controller]
+    D -->|Create ClusterOrder CRD| E[Hub Cluster]
+    E -->|Process ClusterOrder| F[cloudkit-operator]
+    F -->|Provision cluster| G[New Cluster]
+```
+
+### 2. Hub Registration Prerequisites
+
+Before registering a hub, ensure the following requirements are met:
+
+**Hub Cluster Requirements:**
+- OpenShift/Kubernetes cluster with admin access
+- cloudkit-operator deployed and running
+- ClusterOrder CRDs installed
+- Network connectivity to fulfillment-service
+
+**Service Account Setup:**
+Create a service account with cluster-admin privileges for hub operations:
+
+```bash
+# Set your hub cluster context
+export KUBECONFIG=/path/to/hub/kubeconfig
+
+# Create namespace for cloudkit-operator if it doesn't exist
+oc create namespace cloudkit-operator-system --dry-run=client -o yaml | oc apply -f -
+
+# Create service account for hub access
+oc create serviceaccount hub-access -n cloudkit-operator-system
+
+# Grant cluster-admin permissions
+oc create clusterrolebinding hub-access-admin \
+  --clusterrole=cluster-admin \
+  --serviceaccount=cloudkit-operator-system:hub-access
+
+# Generate a long-lived token (24 hours recommended)
+HUB_TOKEN=$(oc create token hub-access -n cloudkit-operator-system --duration=24h)
+echo "Hub token: $HUB_TOKEN"
+```
+
+**Minimal Kubeconfig Creation:**
+Create a minimal kubeconfig file to avoid database payload size limits:
+
+```bash
+# Get the cluster API server URL
+CLUSTER_API=$(oc whoami --show-server)
+
+# Create minimal kubeconfig
+cat > /tmp/hub-kubeconfig.yaml << EOF
+apiVersion: v1
+clusters:
+- cluster:
+    server: $CLUSTER_API
+    insecure-skip-tls-verify: true
+  name: hub-cluster
+contexts:
+- context:
+    cluster: hub-cluster
+    user: hub-access
+  name: default
+current-context: default
+kind: Config
+preferences: {}
+users:
+- name: hub-access
+  user:
+    token: $HUB_TOKEN
+EOF
+
+echo "Minimal kubeconfig created at /tmp/hub-kubeconfig.yaml"
+```
+
+### 3. Hub Registration Process
+
+**Step 1: Login to Fulfillment Service**
+```bash
+# Configure fulfillment-cli for your environment
+cat > ~/.config/fulfillment-cli/config.json << 'EOF'
+{
+  "token_script": "KUBECONFIG=/root/labs/acm/deploy/auth/kubeconfig oc create token dev-admin -n foobar --duration 1h",
+  "insecure": true,
+  "address": "dev-fulfillment-api-foobar.apps.acm.local.lab:443"
+}
+EOF
+
+# Login to the fulfillment service
+./fulfillment-cli login
+```
+
+**Step 2: Register the Hub**
+```bash
+# Register hub with fulfillment service
+./fulfillment-cli create hub \
+  --id production-hub-01 \
+  --kubeconfig /tmp/hub-kubeconfig.yaml \
+  --namespace cloudkit-operator-system
+
+# Verify hub registration
+./fulfillment-cli get hubs
+```
+
+**Step 3: Verify Hub Connectivity**
+```bash
+# Check that the hub is accessible
+./fulfillment-cli describe hub production-hub-01
+
+# Test cluster creation to verify end-to-end functionality
+./fulfillment-cli create cluster --template example
+```
+
+### 4. Hub Management Commands
+
+**List All Hubs:**
+```bash
+# Basic listing
+./fulfillment-cli get hubs
+
+# Detailed output with JSON format
+./fulfillment-cli get hubs --output json
+
+# Filter hubs by specific criteria
+./fulfillment-cli get hubs --filter "status=active"
+```
+
+**Hub Details:**
+```bash
+# Get detailed information about a specific hub
+./fulfillment-cli describe hub production-hub-01
+
+# Check hub connectivity status
+./fulfillment-cli get hub production-hub-01 --output yaml
+```
+
+**Update Hub Configuration:**
+```bash
+# Update hub kubeconfig (if token expires)
+./fulfillment-cli edit hub production-hub-01 --kubeconfig /tmp/new-hub-kubeconfig.yaml
+
+# Update hub namespace
+./fulfillment-cli edit hub production-hub-01 --namespace new-namespace
+```
+
+**Remove Hub:**
+```bash
+# Delete hub registration
+./fulfillment-cli delete hub production-hub-01
+
+# Verify deletion
+./fulfillment-cli get hubs
+```
+
+### 5. Multi-Hub Environment Setup
+
+**Scenario: Multiple Environment Hubs**
+```bash
+# Development hub
+./fulfillment-cli create hub \
+  --id dev-hub \
+  --kubeconfig /tmp/dev-hub-kubeconfig.yaml \
+  --namespace cloudkit-operator-system
+
+# Staging hub  
+./fulfillment-cli create hub \
+  --id staging-hub \
+  --kubeconfig /tmp/staging-hub-kubeconfig.yaml \
+  --namespace cloudkit-operator-system
+
+# Production hub
+./fulfillment-cli create hub \
+  --id prod-hub \
+  --kubeconfig /tmp/prod-hub-kubeconfig.yaml \
+  --namespace cloudkit-operator-system
+
+# List all registered hubs
+./fulfillment-cli get hubs --output table
+```
+
+**Hub Selection Strategy:**
+The fulfillment-service automatically selects an appropriate hub based on:
+- Hub availability and health status
+- Resource capacity and constraints
+- Load balancing policies
+- Template requirements and hub capabilities
+
+### 6. Hub Troubleshooting
+
+**Common Hub Issues:**
+
+**Issue: Hub Registration Fails with "payload string too long"**
+```bash
+# Problem: Kubeconfig contains large certificate data
+# Solution: Create minimal kubeconfig with token authentication
+
+# Check current kubeconfig size
+wc -c /path/to/kubeconfig
+# If > 8KB, create minimal version
+
+# Create service account token
+TOKEN=$(oc create token hub-access -n cloudkit-operator-system --duration=24h)
+
+# Create minimal kubeconfig
+cat > /tmp/minimal-kubeconfig.yaml << EOF
+apiVersion: v1
+clusters:
+- cluster:
+    server: $(oc whoami --show-server)
+    insecure-skip-tls-verify: true
+  name: hub
+contexts:
+- context:
+    cluster: hub
+    user: hub-access
+  name: default
+current-context: default
+kind: Config
+users:
+- name: hub-access
+  user:
+    token: $TOKEN
+EOF
+```
+
+**Issue: Hub Connectivity Problems**
+```bash
+# Check hub cluster accessibility
+KUBECONFIG=/tmp/hub-kubeconfig.yaml oc get nodes
+
+# Verify cloudkit-operator is running
+KUBECONFIG=/tmp/hub-kubeconfig.yaml oc get pods -n cloudkit-operator-system
+
+# Check ClusterOrder CRDs
+KUBECONFIG=/tmp/hub-kubeconfig.yaml oc get crd | grep clusterorder
+
+# Test hub from fulfillment-service perspective
+./fulfillment-cli describe hub hub-id
+```
+
+**Issue: Token Expiration**
+```bash
+# Monitor token expiration
+TOKEN_EXPIRY=$(echo $TOKEN | cut -d. -f2 | base64 -d 2>/dev/null | jq -r .exp)
+echo "Token expires: $(date -d @$TOKEN_EXPIRY)"
+
+# Refresh token and update hub
+NEW_TOKEN=$(oc create token hub-access -n cloudkit-operator-system --duration=24h)
+# Update kubeconfig with new token and re-register hub
+```
+
+## Cluster Order Management
+
+### 1. Understanding Cluster Orders
+
+**What are Cluster Orders?**
+Cluster Orders are Kubernetes Custom Resource Definitions (CRDs) that represent cluster provisioning requests within hub clusters. When you create a cluster via fulfillment-cli, the system:
+
+1. Stores the request in the fulfillment-service database
+2. fulfillment-controller creates a ClusterOrder CRD in a selected hub
+3. cloudkit-operator in the hub processes the ClusterOrder
+4. The actual cluster provisioning begins
+
+**ClusterOrder Lifecycle:**
+```
+PENDING → ACCEPTED → PROGRESSING → READY
+                                 ↓
+                              FAILED
+```
+
+### 2. Creating Cluster Orders
+
+**Basic Cluster Creation:**
+```bash
+# Create cluster with default template
+./fulfillment-cli create cluster --template example
+
+# Create cluster with specific template
+./fulfillment-cli create cluster --template ocp-4-17-small
+
+# Create cluster with custom parameters
+./fulfillment-cli create cluster \
+  --template ocp-4-17-medium \
+  --parameters "region=us-east-1,instance_type=m5.xlarge"
+```
+
+**Advanced Cluster Creation:**
+```bash
+# Create cluster with specific node requirements
+./fulfillment-cli create cluster \
+  --template ocp-4-17-large \
+  --parameters "control_plane_nodes=3,worker_nodes=5,storage_class=gp3"
+
+# Create cluster with custom networking
+./fulfillment-cli create cluster \
+  --template ocp-4-17-custom \
+  --parameters "vpc_cidr=10.1.0.0/16,service_cidr=172.30.0.0/16"
+```
+
+### 3. Monitoring Cluster Orders
+
+**Check Cluster Status:**
+```bash
+# List all clusters
+./fulfillment-cli get clusters
+
+# Get specific cluster details
+CLUSTER_ID="580594a8-3532-4809-b8ff-dd43d037ec45"
+./fulfillment-cli get cluster $CLUSTER_ID
+
+# Monitor cluster creation progress
+watch -n 30 "./fulfillment-cli get cluster $CLUSTER_ID"
+```
+
+**Detailed Cluster Information:**
+```bash
+# Get comprehensive cluster details
+./fulfillment-cli describe cluster $CLUSTER_ID
+
+# Get cluster status in JSON format
+./fulfillment-cli get cluster $CLUSTER_ID --output json | jq '.status'
+
+# Check cluster events and logs
+./fulfillment-cli get cluster $CLUSTER_ID --show-events
+```
+
+### 4. Direct ClusterOrder Inspection
+
+**View ClusterOrder CRDs in Hub:**
+```bash
+# Set context to hub cluster
+export KUBECONFIG=/path/to/hub/kubeconfig
+
+# List all ClusterOrders
+oc get clusterorders -n cloudkit-operator-system
+
+# Get specific ClusterOrder details
+oc describe clusterorder order-h9ppt -n cloudkit-operator-system
+
+# View ClusterOrder YAML
+oc get clusterorder order-h9ppt -n cloudkit-operator-system -o yaml
+```
+
+**Example ClusterOrder Structure:**
+```yaml
+apiVersion: cloudkit.openshift.io/v1alpha1
+kind: ClusterOrder
+metadata:
+  name: order-h9ppt
+  namespace: cloudkit-operator-system
+  labels:
+    cloudkit.openshift.io/clusterorder-uuid: 0063916a-f82e-4eaa-a5de-f783d05294d4
+spec:
+  templateID: example
+  templateParameters: "{}"
+  nodeRequests: []
+status:
+  phase: ""
+  conditions: []
+  clusterReference:
+    namespace: ""
+    hostedClusterName: ""
+    serviceAccountName: ""
+    roleBindingName: ""
+```
+
+### 5. Cluster Order Troubleshooting
+
+**Check CloudKit Operator Logs:**
+```bash
+# View cloudkit-operator logs
+oc logs -n foobar deployment/dev-controller-manager --tail=50 -f
+
+# Filter for specific ClusterOrder
+oc logs -n foobar deployment/dev-controller-manager | grep order-h9ppt
+
+# Check for reconciliation errors
+oc logs -n foobar deployment/dev-controller-manager | grep "Reconciler error"
+```
+
+**Check Fulfillment Controller Logs:**
+```bash
+# View fulfillment-controller logs
+oc logs -n foobar deployment/dev-fulfillment-controller --tail=50 -f
+
+# Check for hub connection issues
+oc logs -n foobar deployment/dev-fulfillment-controller | grep -i "hub\|connection\|error"
+```
+
+**Common ClusterOrder Issues:**
+
+**Issue: ClusterOrder Stuck in Pending State**
+```bash
+# Check if cloudkit-operator is running
+oc get pods -n foobar -l app.kubernetes.io/name=cloudkit-operator
+
+# Verify ClusterOrder CRDs are installed
+oc get crd | grep clusterorder
+
+# Check operator permissions
+oc describe clusterrole dev-manager-role | grep -A 10 clusterorders
+
+# Check for reconciliation errors
+oc logs -n foobar deployment/dev-controller-manager | grep -A 5 -B 5 "failed to reconcile"
+```
+
+**Issue: Communication Errors Between Services**
+```bash
+# Check fulfillment-service connectivity
+curl -k -H "Authorization: Bearer $(oc create token dev-admin -n foobar)" \
+  https://dev-fulfillment-api-foobar.apps.acm.local.lab:443/
+
+# Verify gRPC communication
+oc logs -n foobar deployment/dev-controller-manager | grep -i "grpc\|connection"
+
+# Check TLS issues
+oc logs -n foobar deployment/dev-controller-manager | grep -i "tls\|certificate\|handshake"
+```
+
+### 6. Cluster Order Automation
+
+**Automated Cluster Provisioning Script:**
+```bash
+#!/bin/bash
+# cluster-provision-with-monitoring.sh
+
+set -euo pipefail
+
+TEMPLATE=${1:-example}
+HUB_KUBECONFIG=${2:-/tmp/hub-kubeconfig.yaml}
+
+echo "Creating cluster with template: $TEMPLATE"
+
+# Create cluster and capture ID
+CLUSTER_ID=$(./fulfillment-cli create cluster --template "$TEMPLATE" | grep "ID:" | cut -d' ' -f2)
+echo "Cluster ID: $CLUSTER_ID"
+
+# Monitor both fulfillment-cli and ClusterOrder
+echo "Monitoring cluster creation..."
+while true; do
+    # Check cluster status via CLI
+    CLI_STATUS=$(./fulfillment-cli get cluster "$CLUSTER_ID" --output json | jq -r '.state // "UNKNOWN"')
+    
+    # Check ClusterOrder status in hub
+    export KUBECONFIG="$HUB_KUBECONFIG"
+    CO_STATUS=$(oc get clusterorders -n cloudkit-operator-system \
+        -l "cloudkit.openshift.io/clusterorder-uuid=$CLUSTER_ID" \
+        -o jsonpath='{.items[0].status.phase}' 2>/dev/null || echo "NOT_FOUND")
+    
+    echo "$(date): CLI Status: $CLI_STATUS, ClusterOrder Status: $CO_STATUS"
+    
+    # Check for completion or failure
+    if [[ "$CLI_STATUS" == "READY" ]]; then
+        echo "Cluster successfully created!"
+        ./fulfillment-cli describe cluster "$CLUSTER_ID"
+        break
+    elif [[ "$CLI_STATUS" == "FAILED" || "$CO_STATUS" == "Failed" ]]; then
+        echo "Cluster creation failed"
+        
+        # Show error details
+        echo "=== Cluster Details ==="
+        ./fulfillment-cli describe cluster "$CLUSTER_ID"
+        
+        echo "=== ClusterOrder Details ==="
+        oc describe clusterorder -n cloudkit-operator-system \
+            -l "cloudkit.openshift.io/clusterorder-uuid=$CLUSTER_ID"
+        
+        exit 1
+    fi
+    
+    sleep 30
+done
+```
+
+**Bulk Cluster Management:**
+```bash
+#!/bin/bash
+# bulk-cluster-operations.sh
+
+OPERATION=${1:-list}
+TEMPLATE=${2:-example}
+COUNT=${3:-3}
+
+case $OPERATION in
+    create)
+        echo "Creating $COUNT clusters with template $TEMPLATE"
+        for i in $(seq 1 $COUNT); do
+            echo "Creating cluster $i/$COUNT"
+            ./fulfillment-cli create cluster --template "$TEMPLATE"
+        done
+        ;;
+    
+    list)
+        echo "Listing all clusters:"
+        ./fulfillment-cli get clusters --output table
+        ;;
+    
+    cleanup)
+        echo "Cleaning up failed clusters:"
+        ./fulfillment-cli get clusters --output json | \
+            jq -r '.[] | select(.state == "FAILED") | .id' | \
+            while read -r cluster_id; do
+                echo "Deleting failed cluster: $cluster_id"
+                ./fulfillment-cli delete cluster "$cluster_id"
+            done
+        ;;
+        
+    monitor)
+        echo "Monitoring all active clusters:"
+        while true; do
+            clear
+            ./fulfillment-cli get clusters --output table
+            echo "Last updated: $(date)"
+            sleep 30
+        done
+        ;;
+esac
 ```
 
 ## Networking and Proxy Setup
@@ -1017,6 +1546,27 @@ oc exec deployment/fulfillment-service -n fulfillment-system -c server -- lsof -
 
 # Get kubeconfig
 ./fulfillment-cli get cluster CLUSTER_ID --kubeconfig [--output FILE]
+```
+
+**Hub Management:**
+```bash
+# Create hub
+./fulfillment-cli create hub --id HUB_ID --kubeconfig KUBECONFIG_FILE --namespace NAMESPACE
+
+# List hubs
+./fulfillment-cli get hubs [--output table|json|yaml] [--filter KEY=VALUE]
+
+# Get specific hub
+./fulfillment-cli get hub HUB_ID [--output table|json|yaml]
+
+# Describe hub (detailed info)
+./fulfillment-cli describe hub HUB_ID
+
+# Update hub configuration
+./fulfillment-cli edit hub HUB_ID [--kubeconfig KUBECONFIG_FILE] [--namespace NAMESPACE]
+
+# Delete hub
+./fulfillment-cli delete hub HUB_ID [--force]
 ```
 
 **Template Management:**
