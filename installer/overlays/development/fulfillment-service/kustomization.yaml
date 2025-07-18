@@ -109,6 +109,12 @@ patches:
     - op: replace
       path: /spec/template/spec/volumes/0/secret/secretName
       value: dev-fulfillment-service-tls
+    - op: replace
+      path: /spec/template/spec/containers/0/command/7
+      value: --grpc-server-address=dev-fulfillment-api:8000
+    - op: add
+      path: /spec/template/spec/containers/0/command/-
+      value: --grpc-server-insecure
 - target:
     kind: StatefulSet
     name: fulfillment-database
@@ -192,6 +198,7 @@ patches:
               'system:serviceaccount:foobar:admin',
               'system:serviceaccount:foobar:dev-admin',
               'system:serviceaccount:foobar:controller',
+              'system:serviceaccount:foobar:dev-controller',
               'system:serviceaccount:cloudkit-operator-system:cloudkit-operator-controller-manager',
             ]
 
