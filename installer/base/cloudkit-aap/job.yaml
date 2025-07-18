@@ -6,6 +6,30 @@ metadata:
 spec:
   template:
     spec:
+      initContainers:
+      - name: wait-for-aap
+        image: registry.redhat.io/ubi8/ubi-minimal:latest
+        command:
+          - /bin/sh
+          - -c
+          - |
+            echo "Waiting for AAP controller to be ready..."
+            microdnf install -y curl
+            for i in $(seq 1 30); do
+              echo "Attempt $i/30: Checking AAP controller readiness..."
+              if curl -skf ${AAP_GATEWAY_URL}/api/gateway/v1/ping/ | grep -q 'good'; 
+              then
+                echo "AAP controller is ready!"
+                exit 0
+              fi
+              echo "Controller not ready, waiting 600 seconds..."
+              sleep 600
+            done
+            echo "Timeout waiting for AAP controller"
+            exit 1
+        env:
+        - name: AAP_GATEWAY_URL
+          value: ""
       containers:
       - image: quay.io/rh-ee-jkary/cloudkit-aap-ee:latest
         name: bootstrap

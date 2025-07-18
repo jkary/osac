@@ -43,6 +43,12 @@ patches:
     - op: replace
       path: /spec/issuerRef/name
       value: dev-issuer
+    - op: replace
+      path: /spec/dnsNames
+      value: 
+        - localhost
+        - fulfillment-api
+        - dev-fulfillment-api-foobar.apps.acm.local.lab
 - target:
     kind: Certificate
     name: fulfillment-database-client
@@ -63,10 +69,25 @@ patches:
     - op: replace
       path: /spec/issuerRef/name
       value: dev-issuer
+    - op: replace
+      path: /spec/dnsNames
+      value: 
+        - fulfillment-database
+        - dev-fulfillment-database
+- target:
+    kind: Issuer
+    name: ca-issuer
+  patch: |-
+    - op: replace
+      path: /metadata/name
+      value: dev-ca-issuer
 - target:
     kind: Issuer
     name: issuer
   patch: |-
+    - op: replace
+      path: /metadata/name
+      value: dev-issuer
     - op: replace
       path: /spec/ca/secretName
       value: dev-ca-key
@@ -95,6 +116,14 @@ patches:
     - op: replace
       path: /spec/template/spec/volumes/0/secret/secretName
       value: dev-fulfillment-database-server-cert
+# Fix database hostname in fulfillment-service deployment
+- target:
+    kind: Deployment
+    name: fulfillment-service
+  patch: |-
+    - op: replace
+      path: /spec/template/spec/containers/0/command/6
+      value: --db-url=postgres://client@dev-fulfillment-database:5432/service?sslmode=verify-full&sslcert=/secrets/cert/tls.crt&sslkey=/secrets/cert/tls.key&sslrootcert=/secrets/cert/ca.crt
 # Add imagePullSecrets for private registry access
 - target:
     kind: Deployment
@@ -112,6 +141,59 @@ patches:
       path: /spec/template/spec/imagePullSecrets
       value:
       - name: dev-quay-pull-secret
+# Fix authorization rules to use foobar namespace instead of innabox
+- target:
+    kind: ConfigMap
+    name: fulfillment-service-config
+  patch: |-
+    - op: replace
+      path: /data/rules.yaml
+      value: |
+        #
+        # Copyright (c) 2025 Red Hat Inc.
+        #
+        # Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
+        # the License. You may obtain a copy of the License at
+        #
+        #   http://www.apache.org/licenses/LICENSE-2.0
+        #
+        # Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an
+        # "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
+        # specific language governing permissions and limitations under the License.
+        #
+
+        - name: Allow reflection and health to everyone
+          action: allow
+          condition: method.startsWith('/grpc.reflection.') || method.startsWith('/grpc.health.')
+
+        - name: Allow specific methods to client
+          action: allow
+          condition: |
+            subject.name == 'system:serviceaccount:foobar:client' &&
+            method in [
+              '/events.v1/Watch',
+              '/fulfillment.v1.ClusterTemplates/Get',
+              '/fulfillment.v1.ClusterTemplates/List',
+              '/fulfillment.v1.Clusters/Create',
+              '/fulfillment.v1.Clusters/Delete',
+              '/fulfillment.v1.Clusters/Get',
+              '/fulfillment.v1.Clusters/GetKubeconfig',
+              '/fulfillment.v1.Clusters/GetKubeconfigViaHttp',
+              '/fulfillment.v1.Clusters/List',
+              '/fulfillment.v1.Clusters/Update',
+              '/fulfillment.v1.HostClasses/Get',
+              '/fulfillment.v1.HostClasses/List',
+            ]
+
+        - name: Allow everything to admin and controller
+          action: allow
+          condition: |
+            subject.name in [
+              'system:serviceaccount:foobar:admin',
+              'system:serviceaccount:foobar:dev-admin',
+              'system:serviceaccount:foobar:controller',
+              'system:serviceaccount:cloudkit-operator-system:cloudkit-operator-controller-manager',
+            ]
 
 commonAnnotations:
   cloudkit.io/organization: cloudkit

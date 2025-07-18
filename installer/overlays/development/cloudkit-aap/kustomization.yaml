@@ -79,29 +79,9 @@ patches:
     - op: replace
       path: /spec/template/spec/containers/0/image
       value: quay.io/rh-ee-jkary/cloudkit-aap-ee:latest
-    - op: add
-      path: /spec/template/spec/initContainers
-      value:
-        - name: wait-for-aap
-          image: registry.redhat.io/ubi8/ubi-minimal:latest
-          command:
-            - /bin/sh
-            - -c
-            - |
-              echo "Waiting for AAP controller to be ready..."
-              microdnf install -y curl
-              for i in $(seq 1 30); do
-                echo "Attempt $i/30: Checking AAP controller readiness..."
-                if curl -skf https://dev-cloudkit-foobar.apps.acm.local.lab/api/gateway/v1/ping/ | grep -q 'good'; 
-                then
-                  echo "AAP controller is ready!"
-                  exit 0
-                fi
-                echo "Controller not ready, waiting 600 seconds..."
-                sleep 600
-              done
-              echo "Timeout waiting for AAP controller"
-              exit 1
+    - op: replace
+      path: /spec/template/spec/initContainers/0/env/0/value
+      value: https://dev-cloudkit-foobar.apps.acm.local.lab
   target:
     kind: Job
     name: aap-bootstrap
