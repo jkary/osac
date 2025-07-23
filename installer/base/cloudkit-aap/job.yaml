@@ -13,22 +13,47 @@ spec:
           - /bin/sh
           - -c
           - |
+            echo "Gateway: ${AAP_GATEWAY_URL}"
             echo "Waiting for AAP controller to be ready..."
             microdnf install -y curl
             for i in $(seq 1 30); do
               echo "Attempt $i/30: Checking AAP controller readiness..."
-              if curl -skf ${AAP_GATEWAY_URL}/api/gateway/v1/ping/ | grep -q 'good'; 
+              curl -skf https://${AAP_GATEWAY_URL}/api/gateway/v1/ping/ \
+                | grep -q 'good'; 
+              GATEWAY=$?
+              
+              curl -skf \
+                -u "${AAP_EDA_ADMIN}:${AAP_EDA_PASSWORD}" \
+                https://${AAP_EDA_URL}/api/eda/v1/status/ | grep -qi 'good';
+              EDA_GATEWAY=$?
+             
+              curl -skf https://${AAP_CONTROLLER_GATEWAY_URL}/api/v2/ping/ \
+                | grep -q 'version'; 
+              CONTROLLER_GATEWAY=$?
+              
+              if [ $GATEWAY -eq 0 ] && [ $EDA_GATEWAY -eq 0 ] && [ $CONTROLLER_GATEWAY -eq 0 ]; 
               then
                 echo "AAP controller is ready!"
                 exit 0
               fi
-              echo "Controller not ready, waiting 600 seconds..."
+              echo "AAP is not ready, waiting 600 seconds..."
               sleep 600
             done
-            echo "Timeout waiting for AAP controller"
+            echo "Timeout waiting for AAP."
             exit 1
         env:
         - name: AAP_GATEWAY_URL
+          value: ""
+        - name: AAP_EDA_URL
+          value: ""
+        - name: AAP_EDA_ADMIN
+          value: "admin"
+        - name: AAP_EDA_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: dev-cloudkit-eda-admin-password
+              key: password
+        - name: AAP_CONTROLLER_GATEWAY_URL
           value: ""
       containers:
       - image: quay.io/rh-ee-jkary/cloudkit-aap-ee:latest

@@ -27,5 +27,4 @@ Thumbs.db
 local/
 *.local.yaml
 
-dockerconfig.json
-components/**
+**/dockerconfig.json

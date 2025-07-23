@@ -17,6 +17,7 @@ NC='\033[0m' # No Color
 
 # Deploy configuration
 KUBECTL_CMD=${KUBECTL_CMD:-kubectl}
+KUBECTL_ADMIN_CMD="$KUBECTL_CMD --as system:admin"
 ENVIRONMENT=${ENVIRONMENT:-development}
 
 log() {
@@ -44,7 +45,7 @@ check_kubectl() {
         error "$KUBECTL_CMD not found. Please install kubectl or oc CLI"
     fi
     
-    if ! $KUBECTL_CMD cluster-info >/dev/null 2>&1; then
+    if ! $KUBECTL_ADMIN_CMD cluster-info >/dev/null 2>&1; then
         error "Cannot connect to Kubernetes cluster. Please check your kubeconfig"
     fi
     
@@ -62,7 +63,7 @@ deploy_component() {
     
     log "Deploying $component..."
     
-    if ! $KUBECTL_CMD apply -k "$overlay_path"; then
+    if ! $KUBECTL_ADMIN_CMD apply -k "$overlay_path"; then
         error "Failed to deploy $component"
     fi
     
@@ -77,7 +78,7 @@ wait_for_deployment() {
     
     log "Waiting for deployment $deployment in namespace $namespace..."
     
-    if ! $KUBECTL_CMD wait --for=condition=available deployment/"$deployment" -n "$namespace" --timeout="${timeout}s"; then
+    if ! $KUBECTL_ADMIN_CMD wait --for=condition=available deployment/"$deployment" -n "$namespace" --timeout="${timeout}s"; then
         warn "Deployment $deployment may not be fully ready"
     else
         success "Deployment $deployment is ready"
@@ -90,7 +91,7 @@ check_status() {
     
     case "$ENVIRONMENT" in
         "development")
-            local namespaces=("cloudkit-operator-dev" "fulfillment-service-dev" "cloudkit-aap-dev")
+            local namespaces=("foobar")
             ;;
         "production")
             local namespaces=("cloudkit-operator-system" "fulfillment-service-system" "cloudkit-aap-system")
@@ -101,9 +102,9 @@ check_status() {
     esac
     
     for ns in "${namespaces[@]}"; do
-        if $KUBECTL_CMD get namespace "$ns" >/dev/null 2>&1; then
+        if $KUBECTL_ADMIN_CMD get namespace "$ns" >/dev/null 2>&1; then
             log "Status for namespace: $ns"
-            $KUBECTL_CMD get pods -n "$ns"
+            $KUBECTL_ADMIN_CMD get pods -n "$ns"
             echo
         fi
     done
@@ -126,7 +127,7 @@ deploy_all() {
     
     log "Deploying all components for $ENVIRONMENT environment..."
     
-    if ! $KUBECTL_CMD apply -k "$overlay_path"; then
+    if ! $KUBECTL_ADMIN_CMD apply -k "$overlay_path"; then
         error "Failed to deploy $ENVIRONMENT environment"
     fi
     
@@ -135,8 +136,8 @@ deploy_all() {
     # Wait for key deployments
     case "$ENVIRONMENT" in
         "development")
-            wait_for_deployment "cloudkit-operator-dev" "dev-controller-manager" 180
-            wait_for_deployment "fulfillment-service-dev" "dev-fulfillment-service" 180
+            wait_for_deployment "foobar" "dev-controller-manager" 180
+            wait_for_deployment "foobar" "dev-fulfillment-service" 180
             ;;
         "production")
             wait_for_deployment "cloudkit-operator-system" "controller-manager" 300
@@ -157,7 +158,7 @@ undeploy() {
         error "Environment '$ENVIRONMENT' not found"
     fi
     
-    if ! $KUBECTL_CMD delete -k "$overlay_path"; then
+    if ! $KUBECTL_ADMIN_CMD delete -k "$overlay_path"; then
         warn "Some resources may not have been deleted cleanly"
     fi
     
@@ -233,8 +234,8 @@ case "$COMMAND" in
         check_kubectl
         case "$ENVIRONMENT" in
             "development")
-                wait_for_deployment "cloudkit-operator-dev" "dev-controller-manager" 300
-                wait_for_deployment "fulfillment-service-dev" "dev-fulfillment-service" 300
+                wait_for_deployment "foobar" "dev-controller-manager" 300
+                wait_for_deployment "foobar" "dev-fulfillment-service" 300
                 ;;
             "production")
                 wait_for_deployment "cloudkit-operator-system" "controller-manager" 300

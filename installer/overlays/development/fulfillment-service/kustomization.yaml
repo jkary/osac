@@ -74,20 +74,17 @@ patches:
       value: 
         - fulfillment-database
         - dev-fulfillment-database
-- target:
-    kind: Issuer
-    name: ca-issuer
-  patch: |-
-    - op: replace
-      path: /metadata/name
-      value: dev-ca-issuer
+# - target:
+#     kind: Issuer
+#     name: ca-issuer
+#   patch: |-
+#     - op: replace
+#       path: /metadata/name
+#       value: dev-ca-issuer
 - target:
     kind: Issuer
     name: issuer
   patch: |-
-    - op: replace
-      path: /metadata/name
-      value: dev-issuer
     - op: replace
       path: /spec/ca/secretName
       value: dev-ca-key
@@ -210,7 +207,7 @@ commonAnnotations:
 generatorOptions:
   disableNameSuffixHash: true
 
-images:
-- name: ghcr.io/innabox/fulfillment-service
-  newName: quay.io/rh-ee-jkary/fulfillment-service
-  newTag: latest
+# images:
+# - name: ghcr.io/innabox/fulfillment-service
+#   newName: quay.io/rh-ee-jkary/fulfillment-service
+#   newTag: latest
