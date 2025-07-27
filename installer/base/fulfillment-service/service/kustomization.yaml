@@ -18,3 +18,8 @@ configMapGenerator:
 - name: fulfillment-service-envoy
   files:
   - files/envoy.yaml
+
+- name: fulfillment-service-scripts
+  files:
+  - files/start-server.sh
+  - files/test-server.sh

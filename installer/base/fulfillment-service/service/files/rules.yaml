@@ -18,7 +18,7 @@
 - name: Allow specific methods to client
   action: allow
   condition: |
-    subject.name == 'system:serviceaccount:innabox:client' &&
+    subject.name == 'system:serviceaccount:${NAMESPACE}:client' &&
     method in [
       '/events.v1/Watch',
       '/fulfillment.v1.ClusterTemplates/Get',
@@ -37,7 +37,7 @@
   action: allow
   condition: |
     subject.name in [
-      'system:serviceaccount:innabox:admin',
-      'system:serviceaccount:innabox:controller',
+      'system:serviceaccount:${NAMESPACE}:admin',
+      'system:serviceaccount:${NAMESPACE}:controller',
       'system:serviceaccount:cloudkit-operator-system:cloudkit-operator-controller-manager',
     ]
