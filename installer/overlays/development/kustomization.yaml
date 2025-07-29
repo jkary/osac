@@ -27,7 +27,7 @@ images:
   newTag: latest
 - name: ghcr.io/innabox/fulfillment-service
   newName: quay.io/rh-ee-jkary/fulfillment-service
-  newTag: latest
+  newTag: "0.0.8"
 
 namespace: foobar
 namePrefix: dev-

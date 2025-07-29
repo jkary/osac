@@ -81,13 +81,13 @@ patches:
       value: quay.io/rh-ee-jkary/cloudkit-aap-ee:latest
     - op: replace
       path: /spec/template/spec/initContainers/0/env/0/value
-      value: dev-cloudkit-foobar.apps.acm.local.lab
+      value: dev-cloudkit-foobar.apps.hypershift1.nerc.mghpcc.org
     - op: replace
       path: /spec/template/spec/initContainers/0/env/1/value
-      value: dev-cloudkit-eda-foobar.apps.acm.local.lab
+      value: dev-cloudkit-eda-foobar.apps.hypershift1.nerc.mghpcc.org
     - op: replace
       path: /spec/template/spec/initContainers/0/env/4/value
-      value: dev-cloudkit-controller-foobar.apps.acm.local.lab
+      value: dev-cloudkit-controller-foobar.apps.hypershift1.nerc.mghpcc.org
   target:
     kind: Job
     name: aap-bootstrap

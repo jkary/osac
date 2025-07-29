@@ -20,6 +20,7 @@ metadata:
 # Resources for fulfillment service (uses shared namespace)
 resources:
   - ../../../base/fulfillment-service 
+  - route.yaml
 
 # Patches to fix namePrefix issues with cert-manager
 patches:
