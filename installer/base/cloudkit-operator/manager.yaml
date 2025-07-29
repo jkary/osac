@@ -31,7 +31,7 @@ spec:
         - --leader-elect
         - --health-probe-bind-address=:8081
         - --metrics-bind-address=127.0.0.1:8080
-        image: quay.io/innabox/cloudkit-operator
+        image: ghcr.io/innabox/cloudkit-operator:latest
         name: manager
         securityContext:
           allowPrivilegeEscalation: false

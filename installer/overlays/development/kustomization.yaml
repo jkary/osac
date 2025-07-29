@@ -21,13 +21,7 @@ resources:
 - ./cloudkit-operator
 - ./fulfillment-service
 
-images:
-- name: quay.io/innabox/cloudkit-operator
-  newName: quay.io/rh-ee-jkary/cloudkit-operator
-  newTag: latest
-- name: ghcr.io/innabox/fulfillment-service
-  newName: quay.io/rh-ee-jkary/fulfillment-service
-  newTag: "0.0.8"
+# Images are now configured in base directories
 
 namespace: foobar
 namePrefix: dev-

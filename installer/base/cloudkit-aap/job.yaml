@@ -59,7 +59,7 @@ spec:
         - name: AAP_CONTROLLER_GATEWAY_URL
           value: ""
       containers:
-      - image: quay.io/rh-ee-jkary/cloudkit-aap-ee:latest
+      - image: ghcr.io/innabox/cloudkit-aap-ee:latest
         name: bootstrap
         args:
         - ansible-playbook

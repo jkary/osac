@@ -27,5 +27,5 @@ commonLabels:
 
 images:
   - name: quay.io/innabox/cloudkit-operator
-    newName: quay.io/innabox/cloudkit-operator
+    newName: ghcr.io/innabox/cloudkit-operator
     newTag: latest

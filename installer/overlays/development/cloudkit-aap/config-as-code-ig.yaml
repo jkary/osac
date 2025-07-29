@@ -4,6 +4,6 @@ AAP_ORGANIZATION_NAME=dev
 AAP_PROJECT_NAME=bar
 AAP_PROJECT_GIT_URI=https://github.com/innabox/cloudkit-aap.git
 AAP_PROJECT_GIT_BRANCH=main
-AAP_EE_IMAGE=quay.io/rh-ee-jkary/cloudkit-aap-ee
+AAP_EE_IMAGE=ghcr.io/innabox/cloudkit-aap-ee
 LICENSE_MANIFEST_PATH=/var/secrets/config-as-code-manifest/license.zip
 

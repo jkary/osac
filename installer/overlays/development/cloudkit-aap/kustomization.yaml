@@ -78,7 +78,7 @@ patches:
 - patch: |-
     - op: replace
       path: /spec/template/spec/containers/0/image
-      value: quay.io/rh-ee-jkary/cloudkit-aap-ee:latest
+      value: ghcr.io/innabox/cloudkit-aap-ee:latest
     - op: replace
       path: /spec/template/spec/initContainers/0/env/0/value
       value: dev-cloudkit-foobar.apps.hypershift1.nerc.mghpcc.org
