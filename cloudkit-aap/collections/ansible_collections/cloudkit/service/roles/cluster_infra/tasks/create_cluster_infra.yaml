@@ -9,6 +9,10 @@
     network_suffix: "{{ cluster_infra_name }}"
     network_state: present
 
+- name: Set cluster_infra_network_name
+  ansible.builtin.set_fact:
+    cluster_infra_network_name: "network-{{ cluster_infra_name }}"
+
 # Handle scale down **before** scale up: if we add new agents first,
 # they may not have spec.clusterDeployment.name set by the time
 # we run detach_and_unlabel_all_removed_agents, causing them to be
@@ -47,7 +51,7 @@
     tasks_from: attach_and_approve_all_new_agents
   vars:
     manage_agents_cluster_order_name: "{{ cluster_infra_name }}"
-    manage_agents_cluster_network: "{{ create_network_result }}"
+    manage_agents_cluster_network: "{{ cluster_infra_network_name }}"
 
 - name: Approve agents assigned to the cluster
   ansible.builtin.include_role:
@@ -55,4 +59,4 @@
     tasks_from: attach_and_approve_all_new_agents
   vars:
     manage_agents_cluster_order_name: "{{ cluster_infra_name }}"
-    manage_agents_cluster_network: "{{ create_network_result | default(omit) }}"
+    manage_agents_cluster_network: "{{ cluster_infra_network_name | default(omit) }}"
