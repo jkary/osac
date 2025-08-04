@@ -27,7 +27,7 @@ configMapGenerator:
   - AAP_PROJECT_NAME=bar
   - AAP_PROJECT_GIT_URI=https://github.com/jkary/cloudkit-aap
   - AAP_PROJECT_GIT_BRANCH=kubevirt
-  - AAP_EE_IMAGE=ghcr.io/innabox/cloudkit-aap-ee
+  - AAP_EE_IMAGE=quay.io/rh-ee-jkary/cloudkit-aap-ee:latest
   - LICENSE_MANIFEST_PATH=/var/secrets/config-as-code-manifest/license.zip
   - ANSIBLE_EDA_NAMESPACE=foobar
   options:
