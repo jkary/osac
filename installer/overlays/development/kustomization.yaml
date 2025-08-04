@@ -21,10 +21,25 @@ resources:
 - ./cloudkit-operator
 - ./fulfillment-service
 
-# Images are now configured in base directories
+images:
+- name: ghcr.io/innabox/fulfillment-service
+  newName: quay.io/rh-ee-jkary/fulfillment-service
+  newTag: 0.0.8
 
 namespace: foobar
 namePrefix: dev-
+
+replacements:
+  - source:
+      kind: ServiceAccount
+      name: fulfillment-controller
+      fieldPath: metadata.name
+    targets:
+      - select:
+          kind: ConfigMap
+          name: fulfillment-config
+        fieldPaths:
+          - data.FULFILLMENT_SERVICE_ACCOUNT
 
 # Secret generators for both components
 secretGenerator:
