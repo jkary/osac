@@ -40,8 +40,8 @@ images:
   newName: docker.io/envoyproxy/envoy
   newTag: v1.33.0
 - name: fulfillment-service
-  newName: ghcr.io/innabox/fulfillment-service
-  newTag: 0.0.8
+  newName: quay.io/rh-ee-jkary/fulfillment-service
+  newTag: latest
 - name: postgres
   newName: quay.io/sclorg/postgresql-15-c9s
   newTag: latest

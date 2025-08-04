@@ -34,3 +34,15 @@ secretGenerator:
   type: kubernetes.io/dockerconfigjson
   options:
     disableNameSuffixHash: true
+
+patches:
+- patch: |-
+    - op: replace
+      path: /data/FULFILLMENT_SERVICE_URI
+      value: "https://dev-fulfillment-api-foobar.apps.hypershift1.nerc.mghpcc.org"
+    - op: replace
+      path: /data/FULFILLMENT_SERVICE_ACCOUNT
+      value: "dev-client"
+  target:
+    kind: ConfigMap
+    name: fulfillment-config

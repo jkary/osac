@@ -46,9 +46,9 @@ spec:
             exit 1
         env:
         - name: AAP_GATEWAY_URL
-          value: "dev-cloudkit-foobar.apps.hcp.local.lab"
+          value: "dev-cloudkit-foobar.apps.hypershift1.nerc.mghpcc.org"
         - name: AAP_EDA_URL
-          value: "dev-cloudkit-eda-foobar.apps.hcp.local.lab"
+          value: "dev-cloudkit-eda-foobar.apps.hypershift1.nerc.mghpcc.org"
         - name: AAP_EDA_ADMIN
           value: "admin"
         - name: AAP_EDA_PASSWORD
@@ -57,7 +57,7 @@ spec:
               name: dev-cloudkit-eda-admin-password
               key: password
         - name: AAP_CONTROLLER_GATEWAY_URL
-          value: "dev-cloudkit-controller-foobar.apps.hcp.local.lab"
+          value: "dev-cloudkit-controller-foobar.apps.hypershift1.nerc.mghpcc.org"
       containers:
       - image: ghcr.io/innabox/cloudkit-aap-ee:latest
         name: bootstrap

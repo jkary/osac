@@ -49,7 +49,7 @@ spec:
 
       - name: server
         image: fulfillment-service
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: Always
         env:
           - name: NAMESPACE
             valueFrom:
@@ -72,7 +72,7 @@ spec:
 
       - name: gateway
         image: fulfillment-service
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: Always
         volumeMounts:
         - name: sockets
           mountPath: /run/sockets

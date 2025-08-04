@@ -155,6 +155,13 @@ commonAnnotations:
 generatorOptions:
   disableNameSuffixHash: true
 
+# Override authorization rules for development environment with dev- prefix
+configMapGenerator:
+- name: fulfillment-service-config
+  files:
+  - rules.yaml
+  behavior: merge
+
 # images:
 # - name: ghcr.io/innabox/fulfillment-service
 #   newName: quay.io/rh-ee-jkary/fulfillment-service
