@@ -21,7 +21,7 @@ resources:
 configMapGenerator:
 - name: bar-config-as-code-config
   literals:
-  - AAP_HOSTNAME=https://dev-cloudkit-foobar.apps.hypershift1.nerc.mghpcc.org
+  - AAP_HOSTNAME=https://dev-cloudkit-foobar.apps.hcp.local.lab
   - AAP_VALIDATE_CERTS=false
   - AAP_ORGANIZATION_NAME=dev
   - AAP_PROJECT_NAME=bar
@@ -92,13 +92,22 @@ patches:
       value: quay.io/rh-ee-jkary/cloudkit-aap:latest
     - op: replace
       path: /spec/template/spec/initContainers/0/env/0/value
-      value: dev-cloudkit-foobar.apps.hypershift1.nerc.mghpcc.org
+      value: dev-cloudkit-foobar.apps.hcp.local.lab
     - op: replace
       path: /spec/template/spec/initContainers/0/env/1/value
-      value: dev-cloudkit-eda-foobar.apps.hypershift1.nerc.mghpcc.org
+      value: dev-cloudkit-eda-foobar.apps.hcp.local.lab
     - op: replace
       path: /spec/template/spec/initContainers/0/env/4/value
-      value: dev-cloudkit-controller-foobar.apps.hypershift1.nerc.mghpcc.org
+      value: dev-cloudkit-controller-foobar.apps.hcp.local.lab
+    - op: replace
+      path: /spec/template/spec/initContainers/0/env/3/valueFrom/secretKeyRef/name
+      value: dev-cloudkit-eda-admin-password
+    - op: replace
+      path: /spec/template/spec/containers/0/env/1/valueFrom/secretKeyRef/name
+      value: dev-cloudkit-admin-password
+    - op: replace
+      path: /spec/template/spec/containers/0/env/3/valueFrom/secretKeyRef/name
+      value: dev-cloudkit-eda-admin-password
   target:
     kind: Job
     name: aap-bootstrap

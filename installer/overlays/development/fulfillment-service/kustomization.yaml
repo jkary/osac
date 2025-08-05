@@ -49,7 +49,7 @@ patches:
       value: 
         - localhost
         - fulfillment-api
-        - dev-fulfillment-api-foobar.apps.hypershift1.nerc.mghpcc.org
+        - dev-fulfillment-api-foobar.apps.hcp.local.lab
 - target:
     kind: Certificate
     name: fulfillment-database-client

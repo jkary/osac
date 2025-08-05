@@ -46,61 +46,45 @@ spec:
             exit 1
         env:
         - name: AAP_GATEWAY_URL
-          value: "dev-cloudkit-foobar.apps.hypershift1.nerc.mghpcc.org"
+          value: ""
         - name: AAP_EDA_URL
-          value: "dev-cloudkit-eda-foobar.apps.hypershift1.nerc.mghpcc.org"
+          value: ""
         - name: AAP_EDA_ADMIN
           value: "admin"
         - name: AAP_EDA_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: dev-cloudkit-eda-admin-password
+              name: cloudkit-eda-admin-password
               key: password
         - name: AAP_CONTROLLER_GATEWAY_URL
-          value: "dev-cloudkit-controller-foobar.apps.hypershift1.nerc.mghpcc.org"
+          value: ""
       containers:
       - image: ghcr.io/innabox/cloudkit-aap-ee:latest
         name: bootstrap
         args:
         - ansible-playbook
-        - -vvv
-        - --diff
         - cloudkit.config_as_code.subscription
         - cloudkit.config_as_code.configure
         envFrom:
         - configMapRef:
+            name: config-as-code-config
+        - secretRef:
             name: config-as-code-ig
-        - configMapRef:
-            name: fulfillment-config
         env:
         - name: AAP_USERNAME
           value: admin
         - name: AAP_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: dev-cloudkit-admin-password
+              name: cloudkit-admin-password
               key: password
         - name: AAP_EDA_USERNAME
           value: admin
         - name: AAP_EDA_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: dev-cloudkit-eda-admin-password
+              name: cloudkit-eda-admin-password
               key: password
-        # Override timeout configuration for large repository sync
-        - name: aap_configuration_async_timeout
-          value: "3600"
-        - name: controller_configuration_projects_async_retries
-          value: "60"
-        - name: controller_configuration_projects_async_delay
-          value: "10"
-        # Enable detailed logging
-        - name: ANSIBLE_DEBUG
-          value: "True"
-        - name: ANSIBLE_VERBOSITY
-          value: "3"
-        - name: ANSIBLE_LOG_PATH
-          value: "/tmp/ansible.log"
         volumeMounts:
         - name: config-as-code-manifest-volume
           mountPath: /var/secrets/config-as-code-manifest
