@@ -184,6 +184,7 @@ patches:
               '/events.v1/Watch',
               '/fulfillment.v1.ClusterTemplates/Get',
               '/fulfillment.v1.ClusterTemplates/List',
+              '/fulfillment.v1.Clusters/Create',
               '/fulfillment.v1.Clusters/Delete',
               '/fulfillment.v1.Clusters/Get',
               '/fulfillment.v1.Clusters/GetKubeconfig',
@@ -192,6 +193,11 @@ patches:
               '/fulfillment.v1.Clusters/Update',
               '/fulfillment.v1.HostClasses/Get',
               '/fulfillment.v1.HostClasses/List',
+              '/private.v1.Hubs/Create',
+              '/private.v1.Hubs/Get',
+              '/private.v1.Hubs/List',
+              '/private.v1.Hubs/Update',
+              '/private.v1.Hubs/Delete',
             ]
 
         - name: Allow everything to admin and controller
@@ -201,6 +207,7 @@ patches:
               'system:serviceaccount:${NAMESPACE}:dev-admin',
               'system:serviceaccount:${NAMESPACE}:dev-controller',
               'system:serviceaccount:${NAMESPACE}:dev-controller-manager',
+              'system:serviceaccount:${NAMESPACE}:dev-fulfillment-controller',
             ]
 
 
