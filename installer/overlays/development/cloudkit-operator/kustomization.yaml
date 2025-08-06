@@ -17,19 +17,6 @@ labels:
 resources:
   - ../../../base/cloudkit-operator
 
-# secretGenerator:
-#   - name: quay-pull-secret
-#     type: kubernetes.io/dockerconfigjson
-#     files:
-#       - .dockerconfigjson=dockerconfig.json
-#     options:
-#       disableNameSuffixHash: true
-#     behavior: replace
-
-# images:
-#   - name: quay.io/innabox/cloudkit-operator
-#     newName: quay.io/rh-ee-jkary/cloudkit-operator
-#     newTag: latest
 
 patches:
 - patch: |-
@@ -56,12 +43,12 @@ patches:
       path: /spec/template/spec/containers/0/env/-
       value:
         name: CLOUDKIT_CLUSTER_CREATE_WEBHOOK
-        value: https://dev-cloudkit-eda-foobar.apps.hypershift1.nerc.mghpcc.org:443/api/private/v1/cluster-orders
+        value: http://dev-bar-eda-service:5000/create-hosted-cluster
     - op: add
       path: /spec/template/spec/containers/0/env/-
       value:
         name: CLOUDKIT_CLUSTER_DELETE_WEBHOOK
-        value: https://dev-cloudkit-eda-foobar.apps.hypershift1.nerc.mghpcc.org:443/api/private/v1/cluster-orders
+        value: http://dev-bar-eda-service:5000/delete-hosted-cluster
     - op: add
       path: /spec/template/spec/containers/0/args/-
       value: "--grpc-insecure"
@@ -75,17 +62,24 @@ patches:
       value:
         name: CLOUDKIT_FULFILLMENT_TOKEN_FILE
         value: /var/run/secrets/kubernetes.io/serviceaccount/token
+    - op: add
+      path: /spec/template/spec/containers/0/env/-
+      value:
+        name: CLOUDKIT_CLUSTER_ORDER_NAMESPACE
+        valueFrom:
+          fieldRef:
+            fieldPath: metadata.namespace
   target:
     kind: Deployment
     name: controller-manager
 
-- patch: |-
-    - op: replace
-      path: /metadata/name
-      value: cloudkit-operator-dev
-  target:
-    kind: Namespace
-    name: cloudkit
+# - patch: |-
+#     - op: replace
+#       path: /metadata/name
+#       value: cloudkit-operator-dev
+#   target:
+#     kind: Namespace
+#     name: cloudkit
 
 # Add HyperShift permissions to ClusterRole
 - patch: |-

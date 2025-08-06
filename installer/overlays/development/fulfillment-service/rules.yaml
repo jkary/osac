@@ -43,4 +43,6 @@
       'system:serviceaccount:${NAMESPACE}:dev-controller',
       'system:serviceaccount:${NAMESPACE}:cloudkit-operator-controller-manager',
       'system:serviceaccount:${NAMESPACE}:dev-controller-manager',
+      'system:serviceaccount:${NAMESPACE}:fulfillment-controller',
+      'system:serviceaccount:${NAMESPACE}:dev-fulfillment-controller',
     ]

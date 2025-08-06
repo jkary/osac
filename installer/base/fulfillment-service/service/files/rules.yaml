@@ -40,4 +40,5 @@
       'system:serviceaccount:${NAMESPACE}:admin',
       'system:serviceaccount:${NAMESPACE}:controller',
       'system:serviceaccount:${NAMESPACE}:controller-manager',
+      'system:serviceaccount:${NAMESPACE}:fulfillment-controller',
     ]

@@ -51,40 +51,6 @@ replacements:
           kind: Job
         fieldPaths:
           - spec.template.spec.containers.0.envFrom.0.configMapRef.name
-  #
-  # Don't need this because secretGenerator handles it.
-  #
-  # - source:
-  #     kind: Secret
-  #     name: bar-config-as-code-manifest-ig
-  #     fieldPath: metadata.name
-  #   targets:
-  #     - select:
-  #         kind: Job
-  #       fieldPaths:
-  #         - spec.template.spec.volumes.[name=config-as-code-manifest-volume].secret.secretName
-  #  
-  # We cannot touch the secrets for AAP because then AAP can't update them.
-  #
-  # - source:
-  #     kind: Secret
-  #     name: cloudkit-admin-password
-  #     fieldPath: metadata.name
-  #   targets:
-  #     - select:
-  #         kind: Job
-  #       fieldPaths:
-  #         - spec.template.spec.containers.*.env.[name=AAP_PASSWORD].valueFrom.secretKeyRef.name
-  # - source:
-  #     kind: Secret
-  #     name: cloudkit-eda-admin-password
-  #     fieldPath: metadata.name
-  #   targets:
-  #     - select:
-  #         kind: Job
-  #       fieldPaths:
-  #         - spec.template.spec.containers.*.env.[name=AAP_EDA_PASSWORD].valueFrom.secretKeyRef.name
-
 patches:
 - patch: |-
     - op: replace
@@ -102,3 +68,10 @@ patches:
   target:
     kind: Job
     name: aap-bootstrap
+- patch: |-
+    - op: replace
+      path: /metadata/name
+      value: dev-cloudkit-sa
+  target:
+    kind: ServiceAccount
+    name: cloudkit-sa
