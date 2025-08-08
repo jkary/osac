@@ -14,48 +14,48 @@ labels:
       environment: development
       app.kubernetes.io/managed-by: kustomize
 
+# kustomize will use files with the same name in base automatically.
 resources:
   - ../../../base/cloudkit-aap
-
+  
 # Configuration generators
-configMapGenerator:
-- name: bar-config-as-code-config
+secretGenerator:
+- name: cloudkit-config-as-code-ig
   literals:
   - AAP_HOSTNAME=https://dev-cloudkit-foobar.apps.hypershift1.nerc.mghpcc.org
   - AAP_VALIDATE_CERTS=false
   - AAP_ORGANIZATION_NAME=dev
-  - AAP_PROJECT_NAME=bar
-  - AAP_PROJECT_GIT_URI=https://github.com/jkary/cloudkit-aap
-  - AAP_PROJECT_GIT_BRANCH=kubevirt
+  - AAP_PROJECT_NAME=cloudkit
+  - AAP_PREFIX=dev-foobar
+  - AAP_PROJECT_GIT_URI=https://github.com/innabox/cloudkit-aap
+  - AAP_PROJECT_GIT_BRANCH=main
   - AAP_EE_IMAGE=quay.io/rh-ee-jkary/cloudkit-aap-ee:latest
+  - AAP_INSTANCE_NAME=dev-cloudkit
   - LICENSE_MANIFEST_PATH=/var/secrets/config-as-code-manifest/license.zip
-  - ANSIBLE_EDA_NAMESPACE=foobar
+  - CLOUDKIT_TEMPLATE_COLLECTIONS=cloudkit.templates
+  - CLOUDKIT_FULFILLMENT_SERVICE_URI=https://dev-fulfillment-api-foobar.apps.hypershift1.nerc.mghpcc.org
   options:
     disableNameSuffixHash: true
-
-secretGenerator:
-# Removed - no sensitive config in config-as-code-ig.yaml anymore
-- name: bar-config-as-code-manifest-ig
+- name: foobar-config-as-code-manifest-ig
   files:
   - license.zip=License.zip
   options:
     disableNameSuffixHash: true
 
-replacements:
-  - source:
-      kind: ConfigMap
-      name: bar-config-as-code-config
-      fieldPath: metadata.name
-    targets:
-      - select:
-          kind: Job
-        fieldPaths:
-          - spec.template.spec.containers.0.envFrom.0.configMapRef.name
+
 patches:
 - patch: |-
     - op: replace
+      path: /spec/containers/0/envFrom/0/secretRef/name
+      value: dev-cloudkit-config-as-code-ig
+  target:
+    kind: Job
+    name: dev-app-bootstrap
+
+- patch: |-
+    - op: replace
       path: /spec/template/spec/containers/0/image
-      value: quay.io/rh-ee-jkary/cloudkit-aap:latest
+      value: quay.io/rh-ee-jkary/cloudkit-aap-ee:latest
     - op: replace
       path: /spec/template/spec/initContainers/0/env/0/value
       value: dev-cloudkit-foobar.apps.hypershift1.nerc.mghpcc.org
@@ -68,10 +68,3 @@ patches:
   target:
     kind: Job
     name: aap-bootstrap
-- patch: |-
-    - op: replace
-      path: /metadata/name
-      value: dev-cloudkit-sa
-  target:
-    kind: ServiceAccount
-    name: cloudkit-sa
