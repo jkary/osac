@@ -21,4 +21,4 @@ data:
       leaderElect: true
       resourceName: cloudkit-operator-leader
     gracefulShutdownTimeout: 15s
-    maxConcurrentReconciles: 10 
+    maxConcurrentReconciles: 10

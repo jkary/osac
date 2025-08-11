@@ -179,4 +179,4 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: controller-manager
-  namespace: cloudkit 
+  namespace: cloudkit

@@ -42,15 +42,15 @@ warn() {
 # Check if kubectl/oc is available and connected
 check_kubectl() {
     log "Checking Kubernetes connection..."
-    
+
     if ! command -v "$KUBECTL_CMD" >/dev/null 2>&1; then
         error "$KUBECTL_CMD not found. Please install kubectl or oc CLI"
     fi
-    
+
     if ! $KUBECTL_ADMIN_CMD cluster-info >/dev/null 2>&1; then
         error "Cannot connect to Kubernetes cluster. Please check your kubeconfig"
     fi
-    
+
     success "Kubernetes connection verified"
 }
 
@@ -58,13 +58,13 @@ check_kubectl() {
 deploy_component() {
     local component=$1
     local overlay_path="$OSC_CONFIG_ROOT/overlays/$ENVIRONMENT/$component"
-    
+
     if [ ! -d "$overlay_path" ]; then
         error "Component '$component' not found in environment '$ENVIRONMENT'"
     fi
-    
+
     log "Deploying $component..."
-    
+
     if [ -n "$NAMESPACE" ]; then
         # Create temporary kustomization that overrides namespace
         local temp_kustomization=$(mktemp -d)
@@ -78,12 +78,12 @@ resources:
 
 namespace: $NAMESPACE
 EOF
-        
+
         if ! $KUBECTL_ADMIN_CMD apply -k "$temp_kustomization"; then
             rm -rf "$temp_kustomization"
             error "Failed to deploy $component"
         fi
-        
+
         rm -rf "$temp_kustomization"
     else
         # Use default kustomization namespace
@@ -91,7 +91,7 @@ EOF
             error "Failed to deploy $component"
         fi
     fi
-    
+
     success "$component deployed successfully"
 }
 
@@ -100,9 +100,9 @@ wait_for_deployment() {
     local namespace=$1
     local deployment=$2
     local timeout=${3:-300}
-    
+
     log "Waiting for deployment $deployment in namespace $namespace..."
-    
+
     if ! $KUBECTL_ADMIN_CMD wait --for=condition=available deployment/"$deployment" -n "$namespace" --timeout="${timeout}s"; then
         warn "Deployment $deployment may not be fully ready"
     else
@@ -113,7 +113,7 @@ wait_for_deployment() {
 # Check deployment status
 check_status() {
     log "Checking deployment status..."
-    
+
     if [ -n "$NAMESPACE" ]; then
         local namespaces=("$NAMESPACE")
     else
@@ -129,7 +129,7 @@ check_status() {
                 ;;
         esac
     fi
-    
+
     for ns in "${namespaces[@]}"; do
         if $KUBECTL_ADMIN_CMD get namespace "$ns" >/dev/null 2>&1; then
             log "Status for namespace: $ns"
@@ -143,10 +143,10 @@ check_status() {
 apply_aap_installation() {
     if [ "$APPLY_AAP_INSTALLATION" = "true" ]; then
         local aap_file="$OSC_CONFIG_ROOT/aap-installation.yaml"
-        
+
         if [ -f "$aap_file" ]; then
             log "Applying AAP installation configuration..."
-            
+
             if [ -n "$NAMESPACE" ]; then
                 # Replace namespace in AAP installation and apply
                 sed "s/namespace: foobar/namespace: $NAMESPACE/g" "$aap_file" | $KUBECTL_ADMIN_CMD apply -f -
@@ -158,7 +158,7 @@ apply_aap_installation() {
                     error "Failed to apply AAP installation configuration"
                 fi
             fi
-            
+
             success "AAP installation configuration applied successfully"
         else
             warn "AAP installation file not found at $aap_file"
@@ -177,23 +177,23 @@ deploy_all() {
         log "Target namespace: $NAMESPACE"
     fi
     log "Apply AAP installation: $APPLY_AAP_INSTALLATION"
-    
+
     check_kubectl
-    
+
     # Deploy the entire environment
     local overlay_path="$OSC_CONFIG_ROOT/overlays/$ENVIRONMENT"
-    
+
     if [ ! -d "$overlay_path" ]; then
         error "Environment '$ENVIRONMENT' not found"
     fi
-    
+
     log "Deploying all components for $ENVIRONMENT environment..."
-    
+
     if [ -n "$NAMESPACE" ]; then
         # Create temporary kustomization that overrides namespace
         local temp_kustomization=$(mktemp -d)
         local relative_path=$(realpath --relative-to="$temp_kustomization" "$overlay_path")
-        
+
         # Create base kustomization with namespace override
         cat > "$temp_kustomization/kustomization.yaml" << EOF
 apiVersion: kustomize.config.k8s.io/v1beta1
@@ -247,12 +247,12 @@ patches:
     name: dev-manager-rolebinding
 EOF
         fi
-        
+
         if ! $KUBECTL_ADMIN_CMD apply -k "$temp_kustomization"; then
             rm -rf "$temp_kustomization"
             error "Failed to deploy $ENVIRONMENT environment"
         fi
-        
+
         rm -rf "$temp_kustomization"
     else
         # Use default kustomization namespace
@@ -260,12 +260,12 @@ EOF
             error "Failed to deploy $ENVIRONMENT environment"
         fi
     fi
-    
+
     success "All components deployed successfully"
-    
+
     # Apply AAP installation after kustomization
     apply_aap_installation
-    
+
     # Wait for key deployments
     case "$ENVIRONMENT" in
         "development")
@@ -280,20 +280,20 @@ EOF
             wait_for_deployment "$fulfillment_namespace" "fulfillment-service" 300
             ;;
     esac
-    
+
     check_status
 }
 
 # Undeploy components
 undeploy() {
     log "Undeploying OSC Config..."
-    
+
     local overlay_path="$OSC_CONFIG_ROOT/overlays/$ENVIRONMENT"
-    
+
     if [ ! -d "$overlay_path" ]; then
         error "Environment '$ENVIRONMENT' not found"
     fi
-    
+
     if [ -n "$NAMESPACE" ]; then
         # Create temporary kustomization that overrides namespace
         local temp_kustomization=$(mktemp -d)
@@ -307,12 +307,12 @@ resources:
 
 namespace: $NAMESPACE
 EOF
-        
+
         if ! $KUBECTL_ADMIN_CMD delete -k "$temp_kustomization"; then
             rm -rf "$temp_kustomization"
             warn "Some resources may not have been deleted cleanly"
         fi
-        
+
         rm -rf "$temp_kustomization"
     else
         # Use default kustomization namespace
@@ -320,7 +320,7 @@ EOF
             warn "Some resources may not have been deleted cleanly"
         fi
     fi
-    
+
     success "OSC Config undeployed"
 }
 

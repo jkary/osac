@@ -6,4 +6,4 @@ metadata:
     openshift.io/cluster-monitoring: "true"
     app.kubernetes.io/name: cloudkit
     app.kubernetes.io/managed-by: kustomize
-  name: cloudkit 
+  name: cloudkit

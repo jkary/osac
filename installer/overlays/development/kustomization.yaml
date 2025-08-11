@@ -65,4 +65,3 @@ patches:
   target:
     kind: RoleBinding
     name: aap-fulfillment-template-publisher-binding
-

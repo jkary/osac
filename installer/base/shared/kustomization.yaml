@@ -15,4 +15,4 @@ commonAnnotations:
 
 # Common labels for all CloudKit components
 commonLabels:
-  app.kubernetes.io/part-of: cloudkit 
+  app.kubernetes.io/part-of: cloudkit

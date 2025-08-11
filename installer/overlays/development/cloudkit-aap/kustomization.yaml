@@ -17,7 +17,7 @@ labels:
 # kustomize will use files with the same name in base automatically.
 resources:
   - ../../../base/cloudkit-aap
-  
+
 # Configuration generators
 secretGenerator:
 - name: config-as-code-ig

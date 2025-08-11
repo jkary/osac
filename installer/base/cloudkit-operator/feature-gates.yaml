@@ -25,4 +25,4 @@ data:
         description: "Enable event-driven automation integration"
       - name: "ResourceQuotaManagement"
         enabled: true
-        description: "Enable automatic resource quota management" 
+        description: "Enable automatic resource quota management"

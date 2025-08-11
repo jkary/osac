@@ -19,22 +19,22 @@ spec:
             for i in $(seq 1 30); do
               echo "Attempt $i/30: Checking AAP controller readiness..."
               curl -skf https://${AAP_GATEWAY_URL}/api/gateway/v1/ping/ \
-                | grep -q 'good'; 
+                | grep -q 'good';
               GATEWAY=$?
               echo "GATEWAY exit code: $GATEWAY"
-              
+
               curl -skf \
                 -u "${AAP_EDA_ADMIN}:${AAP_EDA_PASSWORD}" \
                 https://${AAP_EDA_URL}/api/eda/v1/status/ | grep -qi 'good';
               EDA_GATEWAY=$?
               echo "EDA_GATEWAY exit code: $EDA_GATEWAY"
-             
+
               curl -skf https://${AAP_CONTROLLER_GATEWAY_URL}/api/v2/ping/ \
-                | grep -q 'version'; 
+                | grep -q 'version';
               CONTROLLER_GATEWAY=$?
               echo "CONTROLLER_GATEWAY exit code: $CONTROLLER_GATEWAY"
-              
-              if [ $GATEWAY -eq 0 ] && [ $EDA_GATEWAY -eq 0 ] && [ $CONTROLLER_GATEWAY -eq 0 ]; 
+
+              if [ $GATEWAY -eq 0 ] && [ $EDA_GATEWAY -eq 0 ] && [ $CONTROLLER_GATEWAY -eq 0 ];
               then
                 echo "AAP controller is ready!"
                 exit 0

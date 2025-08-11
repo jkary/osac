@@ -403,7 +403,7 @@ graph TD
     B -->|TLS Passthrough| C[Service/Load Balancer]
     C -->|HTTP/2| D[Envoy Proxy]
     D -->|gRPC over Unix Socket| E[fulfillment-service]
-    
+
     F[JWT Token] -->|Authentication| A
     G[cert-manager] -->|TLS Certificates| B
     H[ConfigMap] -->|Authorization Rules| D
@@ -679,7 +679,7 @@ EOF
   --kubeconfig /tmp/dev-hub-kubeconfig.yaml \
   --namespace cloudkit-operator-system
 
-# Staging hub  
+# Staging hub
 ./fulfillment-cli create hub \
   --id staging-hub \
   --kubeconfig /tmp/staging-hub-kubeconfig.yaml \
@@ -957,15 +957,15 @@ echo "Monitoring cluster creation..."
 while true; do
     # Check cluster status via CLI
     CLI_STATUS=$(./fulfillment-cli get cluster "$CLUSTER_ID" --output json | jq -r '.state // "UNKNOWN"')
-    
+
     # Check ClusterOrder status in hub
     export KUBECONFIG="$HUB_KUBECONFIG"
     CO_STATUS=$(oc get clusterorders -n cloudkit-operator-system \
         -l "cloudkit.openshift.io/clusterorder-uuid=$CLUSTER_ID" \
         -o jsonpath='{.items[0].status.phase}' 2>/dev/null || echo "NOT_FOUND")
-    
+
     echo "$(date): CLI Status: $CLI_STATUS, ClusterOrder Status: $CO_STATUS"
-    
+
     # Check for completion or failure
     if [[ "$CLI_STATUS" == "READY" ]]; then
         echo "Cluster successfully created!"
@@ -973,18 +973,18 @@ while true; do
         break
     elif [[ "$CLI_STATUS" == "FAILED" || "$CO_STATUS" == "Failed" ]]; then
         echo "Cluster creation failed"
-        
+
         # Show error details
         echo "=== Cluster Details ==="
         ./fulfillment-cli describe cluster "$CLUSTER_ID"
-        
+
         echo "=== ClusterOrder Details ==="
         oc describe clusterorder -n cloudkit-operator-system \
             -l "cloudkit.openshift.io/clusterorder-uuid=$CLUSTER_ID"
-        
+
         exit 1
     fi
-    
+
     sleep 30
 done
 ```
@@ -1006,12 +1006,12 @@ case $OPERATION in
             ./fulfillment-cli create cluster --template "$TEMPLATE"
         done
         ;;
-    
+
     list)
         echo "Listing all clusters:"
         ./fulfillment-cli get clusters --output table
         ;;
-    
+
     cleanup)
         echo "Cleaning up failed clusters:"
         ./fulfillment-cli get clusters --output json | \
@@ -1021,7 +1021,7 @@ case $OPERATION in
                 ./fulfillment-cli delete cluster "$cluster_id"
             done
         ;;
-        
+
     monitor)
         echo "Monitoring all active clusters:"
         while true; do
@@ -1284,14 +1284,14 @@ echo "Waiting for cluster to be ready..."
 while true; do
   STATE=$(./fulfillment-cli get cluster "$CLUSTER_ID" --output json | jq -r '.state')
   echo "Current state: $STATE"
-  
+
   if [[ "$STATE" == "READY" ]]; then
     break
   elif [[ "$STATE" == "FAILED" ]]; then
     echo "Cluster creation failed"
     exit 1
   fi
-  
+
   sleep 60
 done
 
