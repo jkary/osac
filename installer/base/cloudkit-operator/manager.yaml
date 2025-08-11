@@ -106,4 +106,4 @@ spec:
           name: logging-config
       - name: webhook-config
         configMap:
-          name: webhook-config 
+          name: webhook-config

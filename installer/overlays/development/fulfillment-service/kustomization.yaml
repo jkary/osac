@@ -19,7 +19,7 @@ metadata:
 
 # Resources for fulfillment service (uses shared namespace)
 resources:
-  - ../../../base/fulfillment-service 
+  - ../../../base/fulfillment-service
   - route.yaml
 
 # Patches to fix namePrefix issues with cert-manager
@@ -46,7 +46,7 @@ patches:
       value: dev-issuer
     - op: replace
       path: /spec/dnsNames
-      value: 
+      value:
         - localhost
         - fulfillment-api
         - dev-fulfillment-api-foobar.apps.hypershift1.nerc.mghpcc.org
@@ -72,7 +72,7 @@ patches:
       value: dev-issuer
     - op: replace
       path: /spec/dnsNames
-      value: 
+      value:
         - fulfillment-database
         - dev-fulfillment-database
 # - target:

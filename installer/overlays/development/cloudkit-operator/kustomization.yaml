@@ -38,7 +38,7 @@ patches:
       path: /spec/template/spec/containers/0/env/-
       value:
         name: CLOUDKIT_FULFILLMENT_SERVER_ADDRESS
-        value: dev-fulfillment-api-foobar.apps.hypershift1.nerc.mghpcc.org:443 
+        value: dev-fulfillment-api-foobar.apps.hypershift1.nerc.mghpcc.org:443
     - op: add
       path: /spec/template/spec/containers/0/env/-
       value:
@@ -113,4 +113,4 @@ patches:
       value: dev-controller-manager
   target:
     kind: ClusterRoleBinding
-    name: manager-rolebinding 
+    name: manager-rolebinding

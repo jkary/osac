@@ -14,7 +14,7 @@ resources:
 commonAnnotations:
   cloudkit.io/organization: cloudkit
 
-# Common labels for all CloudKit components  
+# Common labels for all CloudKit components
 labels:
   - includeSelectors: true
     pairs:

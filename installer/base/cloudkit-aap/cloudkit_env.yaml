@@ -27,4 +27,3 @@ type: Opaque
 stringData:
   credentials: |
     # Setup here the credentials required for cluster fulfillment playbooks (AWS, OpenStack, ...)
-

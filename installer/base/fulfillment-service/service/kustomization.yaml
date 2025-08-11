@@ -14,7 +14,7 @@ configMapGenerator:
 - name: fulfillment-service-config
   files:
   - files/rules.yaml
-  
+
 - name: fulfillment-service-envoy
   files:
   - files/envoy.yaml

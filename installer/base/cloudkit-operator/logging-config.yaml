@@ -31,4 +31,4 @@ data:
       callerEncoder: short
       nameEncoder: ""
     initialFields:
-      service: cloudkit-operator 
+      service: cloudkit-operator

@@ -1,4 +1,4 @@
----     
+---
 apiVersion: v1
 kind: Namespace
 metadata:
@@ -22,11 +22,11 @@ spec:
  channel: stable-v1
  name: openshift-cert-manager-operator
  source: redhat-operators
- sourceNamespace: openshift-marketplace 
+ sourceNamespace: openshift-marketplace
 ---
 apiVersion: operator.openshift.io/v1alpha1
- kind: CertManager
- metadata:
-   name: cluster
- spec:
-   managementState: "Managed"
+kind: CertManager
+metadata:
+ name: cluster
+spec:
+ managementState: "Managed"

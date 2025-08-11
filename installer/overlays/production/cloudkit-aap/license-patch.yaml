@@ -1,4 +1,4 @@
 # license patch for ansible extra variables.
 - op: replace
   path: data/license.zip
-  value: 
+  value:

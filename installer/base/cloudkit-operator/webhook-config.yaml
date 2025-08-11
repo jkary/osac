@@ -33,4 +33,4 @@ data:
             - operations: ["CREATE", "UPDATE"]
               apiGroups: ["cloudkit.io"]
               apiVersions: ["v1alpha1"]
-              resources: ["cloudkits"] 
+              resources: ["cloudkits"]
