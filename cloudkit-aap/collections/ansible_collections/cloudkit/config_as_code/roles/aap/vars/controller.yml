@@ -99,11 +99,15 @@ controller_workflows:  # noqa: var-naming[no-role-prefix]
     inventory: "{{ aap_prefix }}-cluster-fulfillment"
     workflow_nodes:
       - identifier: "create-cluster"
-        unified_job_template: "{{ aap_prefix }}-create-hosted-cluster"
+        unified_job_template:
+          name: "{{ aap_prefix }}-create-hosted-cluster"
+          type: job_template
         success_nodes:
           - "post-install"
       - identifier: "post-install"
-        unified_job_template: "{{ aap_prefix }}-create-hosted-cluster-post-install"
+        unified_job_template:
+          name: "{{ aap_prefix }}-create-hosted-cluster-post-install"
+          type: job_template
 
 # Create cluster fulfillment and confg-as-code inventories. They are the same
 # for the moment, but spliting them will allow us to diverge easily in the
