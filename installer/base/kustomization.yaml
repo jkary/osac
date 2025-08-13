@@ -1,5 +1,6 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
+namespace: innabox
 
 metadata:
   name: cloudkit-base
@@ -10,12 +11,34 @@ resources:
   - cloudkit-operator
   - fulfillment-service
 
-# Common annotations for all CloudKit components
-commonAnnotations:
-  cloudkit.io/organization: cloudkit
-
 # Common labels for all CloudKit components
 labels:
   - includeSelectors: true
     pairs:
       app.kubernetes.io/part-of: cloudkit
+
+images:
+- name: gomplate
+  newName: docker.io/gomplate/gomplate
+  newTag: latest
+- name: postgres
+  newName: quay.io/sclorg/postgresql-15-c9s
+  newTag: latest
+- name: fulfillment-service
+  newName: ghcr.io/innabox/fulfillment-service
+  newTag: latest
+- name: cloudkit-aap
+  newName: ghcr.io/innabox/cloudkit-aap
+  newTag: latest
+- name: cloudkit-operator
+  newName: ghcr.io/innabox/cloudkit-operator
+  newTag: latest
+- name: envoy
+  newName: docker.io/envoyproxy/envoy
+  newTag: v1.33.0
+- name: openshift-cli
+  newName: image-registry.openshift-image-registry.svc:5000/openshift/cli
+  newTag: latest
+
+configurations:
+- nameReference.yaml

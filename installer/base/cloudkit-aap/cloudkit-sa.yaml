@@ -1,9 +1,7 @@
----
 apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: cloudkit-sa
-  namespace: cloudkit
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -16,14 +14,4 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: cloudkit-sa
-    namespace: cloudkit
----
-apiVersion: v1
-kind: Secret
-metadata:
-  name: cluster-fulfillment-ig
-  namespace: cloudkit
-type: Opaque
-stringData:
-  credentials: |
-    # Setup here the credentials required for cluster fulfillment playbooks (AWS, OpenStack, ...)
+    namespace: default

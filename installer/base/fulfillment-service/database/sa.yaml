@@ -11,15 +11,7 @@
 # specific language governing permissions and limitations under the License.
 #
 
-apiVersion: route.openshift.io/v1
-kind: Route
+apiVersion: v1
+kind: ServiceAccount
 metadata:
-  name: fulfillment-api
-spec:
-  to:
-    kind: Service
-    name: fulfillment-api
-  port:
-    targetPort: api
-  tls:
-    termination: passthrough
+  name: fulfillment-database

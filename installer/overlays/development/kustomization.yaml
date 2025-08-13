@@ -1,12 +1,12 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
-metadata:
-  name: cloudkit-development-unified
+namespace: innabox-devel
 
-# Development environment annotations
-commonAnnotations:
-  environment: development
+# This applies a name prefix to cluster-scoped resources (ClusterRoles,
+# ClusterRoleBindings) but does not modify namespaced resources.
+transformers:
+- prefixTransformer.yaml
 
 labels:
 - includeSelectors: true
@@ -14,54 +14,26 @@ labels:
     app.kubernetes.io/managed-by: kustomize
     environment: development
 
-# Include base resources (cloudkit-aap, cloudkit-operator, shared)
 resources:
-- ../../base/shared
-- ./cloudkit-aap
-- ./cloudkit-operator
-- ./fulfillment-service
+- ../../base
 
-images:
-- name: ghcr.io/innabox/fulfillment-service
-  newName: quay.io/rh-ee-jkary/fulfillment-service
-  newTag: latest
+generatorOptions:
+  disableNameSuffixHash: true
 
-namespace: foobar
-namePrefix: dev-
-
-# replacements:
-#   - source:
-#       kind: ServiceAccount
-#       name: fulfillment-controller
-#       fieldPath: metadata.name
-#     targets:
-#       - select:
-#           kind: ConfigMap
-#           name: fulfillment-config
-#         fieldPaths:
-#           - data.FULFILLMENT_SERVICE_ACCOUNT
-
-# Secret generators for both components
 secretGenerator:
-- files:
-  - .dockerconfigjson=dockerconfig.json
-  name: quay-pull-secret
-  type: kubernetes.io/dockerconfigjson
-  options:
-    disableNameSuffixHash: true
 
-patches:
-- patch: |-
-    - op: replace
-      path: /rules/0/resourceNames/0
-      value: "dev-fulfillment-controller"
-  target:
-    kind: Role
-    name: create-controller-token
-- patch: |-
-    - op: replace
-      path: /subjects/0/name
-      value: "dev-template-publisher"
-  target:
-    kind: RoleBinding
-    name: aap-fulfillment-template-publisher-binding
+# This expects to find quay credentials in
+# files/quay-pull-secret.json.
+- name: quay-pull-secret
+  files:
+  - .dockerconfigjson=files/quay-pull-secret.json
+  type: kubernetes.io/dockerconfigjson
+
+# This expects to find an AAP license manifest
+# in files/license.zip.
+- name: config-as-code-manifest-ig
+  options:
+    labels:
+      cloudkit.openshift.io/project: cloudkit-aap
+  files:
+  - license.zip=files/license.zip
