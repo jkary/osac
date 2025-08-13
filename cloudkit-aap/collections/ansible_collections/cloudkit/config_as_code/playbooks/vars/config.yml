@@ -1,5 +1,5 @@
 ---
-current_namespace: "{{ lookup('file', '/var/run/secrets/kubernetes.io/serviceaccount/namespace') }}"
+current_namespace: "{{ lookup('env', 'NAMESPACE') }}"
 aap_instance_name: "{{ lookup('env', 'AAP_INSTANCE_NAME', default='innabox-aap') }}"
 aap_hostname: "{{ lookup('env', 'AAP_HOSTNAME', default='http://' + aap_instance_name) }}"
 aap_username: "{{ lookup('env', 'AAP_USERNAME', default='admin') }}"
