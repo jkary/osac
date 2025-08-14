@@ -332,6 +332,8 @@ controller_instance_groups:  # noqa: var-naming[no-role-prefix]
               - name: kube-api-access
                 mountPath: /var/run/secrets/kubernetes.io/serviceaccount
                 readOnly: true
+              - name: fulfillment-service-tls
+                mountPath: /certs
             envFrom:
               - configMapRef:
                   name: publish-templates-ig
@@ -341,6 +343,8 @@ controller_instance_groups:  # noqa: var-naming[no-role-prefix]
                 valueFrom:
                   fieldRef:
                     fieldPath: metadata.namespace
+              - name: SSL_CERT_FILE
+                value: /certs/ca.crt
         volumes:
           - name: kube-api-access
             projected:
@@ -365,5 +369,8 @@ controller_instance_groups:  # noqa: var-naming[no-role-prefix]
                       - key: service-ca.crt
                         path: service-ca.crt
               defaultMode: 420
+          - name: fulfillment-service-tls
+            secret:
+              secretName: fulfillment-service-tls
   - name: "{{ aap_prefix }}-create-hosted-cluster-post-install-ig"
     is_container_group: true
