@@ -17,3 +17,5 @@ controller_roles:  # noqa: var-naming[no-role-prefix]
     job_templates:
       - "{{ aap_prefix }}-create-hosted-cluster"
       - "{{ aap_prefix }}-delete-hosted-cluster"
+    workflows:
+      - "{{ aap_prefix }}-create-hosted-cluster-workflow"
