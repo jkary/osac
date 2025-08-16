@@ -13,7 +13,7 @@
   pre_tasks:
     - name: Extract template info
       ansible.builtin.include_role:
-        name: extract_template_info
+        name: cloudkit.service.extract_template_info
 
   tasks:
     - name: Post-install hosted cluster configuration
