@@ -104,7 +104,7 @@ controller_workflows:  # noqa: var-naming[no-role-prefix]
           type: job_template
         related:
           success_nodes:
-            - "post-install"
+            - identifier: "post-install"
       - identifier: "post-install"
         unified_job_template:
           name: "{{ aap_prefix }}-create-hosted-cluster-post-install"
