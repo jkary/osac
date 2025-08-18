@@ -25,7 +25,7 @@ spec:
       labels:
         app: fulfillment-controller
     spec:
-      serviceAccountName: controller
+      serviceAccountName: fulfillment-controller
       volumes:
       - name: service-tls
         secret:

@@ -1,9 +1,0 @@
----
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: fulfillment-config
-  namespace: cloudkit
-data:
-  FULFILLMENT_SERVICE_URI: "https://fulfillment-api.svc.cluster.local:8443"
-  FULFILLMENT_SERVICE_ACCOUNT: ""

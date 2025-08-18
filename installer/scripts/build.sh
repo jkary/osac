@@ -40,37 +40,37 @@ warn() {
 # Check if git submodules are initialized
 check_submodules() {
     log "Checking git submodules..."
-    
+
     cd "$OSC_CONFIG_ROOT"
-    
+
     if ! git submodule status | grep -q "^[[:space:]]"; then
         warn "Git submodules not initialized. Initializing now..."
         git submodule update --init --recursive
     fi
-    
+
     success "Git submodules ready"
 }
 
 # Build CloudKit Operator
 build_cloudkit_operator() {
     log "Building CloudKit Operator..."
-    
+
     cd "$OSC_CONFIG_ROOT/components/cloudkit-operator"
-    
+
     # Build the operator image
     if ! make image-build IMG="$REGISTRY/cloudkit-operator:$IMAGE_TAG"; then
         error "Failed to build CloudKit Operator"
     fi
-    
+
     success "CloudKit Operator built successfully"
 }
 
 # Build Fulfillment Service
 build_fulfillment_service() {
     log "Building Fulfillment Service..."
-    
+
     cd "$OSC_CONFIG_ROOT/components/fulfillment-service"
-    
+
     # Build the service image
     if [ -f "Containerfile" ]; then
         $CONTAINER_TOOL build -t "$REGISTRY/fulfillment-service:$IMAGE_TAG" -f Containerfile .
@@ -79,16 +79,16 @@ build_fulfillment_service() {
     else
         error "No Containerfile or Dockerfile found in fulfillment-service"
     fi
-    
+
     success "Fulfillment Service built successfully"
 }
 
 # Build CloudKit AAP (just validation since it's Ansible)
 build_cloudkit_aap() {
     log "Validating CloudKit AAP..."
-    
+
     cd "$OSC_CONFIG_ROOT/components/cloudkit-aap"
-    
+
     # Check if ansible-navigator is available for validation
     if command -v ansible-navigator >/dev/null 2>&1; then
         # Validate playbooks
@@ -101,7 +101,7 @@ build_cloudkit_aap() {
     else
         warn "ansible-navigator not found. Skipping AAP validation."
     fi
-    
+
     success "CloudKit AAP validation completed"
 }
 
@@ -111,9 +111,9 @@ build_all() {
     log "Container tool: $CONTAINER_TOOL"
     log "Image tag: $IMAGE_TAG"
     log "Registry: $REGISTRY"
-    
+
     check_submodules
-    
+
     case "${1:-all}" in
         "cloudkit-operator"|"operator")
             build_cloudkit_operator
@@ -133,7 +133,7 @@ build_all() {
             error "Unknown component: $1. Valid options: cloudkit-operator, fulfillment-service, cloudkit-aap, all"
             ;;
     esac
-    
+
     success "Build process completed!"
 }
 
@@ -146,7 +146,7 @@ Build OSC Config components for local development
 
 COMPONENTS:
   cloudkit-operator    Build only CloudKit Operator
-  fulfillment-service  Build only Fulfillment Service  
+  fulfillment-service  Build only Fulfillment Service
   cloudkit-aap         Validate CloudKit AAP
   all                  Build all components (default)
 

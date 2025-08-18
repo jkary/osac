@@ -18,15 +18,18 @@
 - name: Allow specific methods to client
   action: allow
   condition: |
-    subject.name == 'system:serviceaccount:${NAMESPACE}:client' &&
+    subject.name == 'system:serviceaccount:{{ .Env.NAMESPACE }}:fulfillment-client' &&
     method in [
       '/events.v1/Watch',
       '/fulfillment.v1.ClusterTemplates/Get',
       '/fulfillment.v1.ClusterTemplates/List',
+      '/fulfillment.v1.Clusters/Create',
       '/fulfillment.v1.Clusters/Delete',
       '/fulfillment.v1.Clusters/Get',
       '/fulfillment.v1.Clusters/GetKubeconfig',
       '/fulfillment.v1.Clusters/GetKubeconfigViaHttp',
+      '/fulfillment.v1.Clusters/GetPassword',
+      '/fulfillment.v1.Clusters/GetPasswordViaHttp',
       '/fulfillment.v1.Clusters/List',
       '/fulfillment.v1.Clusters/Update',
       '/fulfillment.v1.HostClasses/Get',
@@ -37,7 +40,18 @@
   action: allow
   condition: |
     subject.name in [
-      'system:serviceaccount:${NAMESPACE}:admin',
-      'system:serviceaccount:${NAMESPACE}:controller',
-      'system:serviceaccount:${NAMESPACE}:controller-manager',
+      'system:serviceaccount:{{ .Env.NAMESPACE }}:fulfillment-admin',
+      'system:serviceaccount:{{ .Env.NAMESPACE }}:fulfillment-controller',
+      'system:serviceaccount:{{ .Env.NAMESPACE }}:cloudkit-operator-controller-manager',
+    ]
+
+- name: Allow template publisher to create templates
+  action: allow
+  condition: |
+    subject.name == 'system:serviceaccount:{{ .Env.NAMESPACE }}:template-publisher' &&
+    method in [
+      '/fulfillment.v1.ClusterTemplates/Get',
+      '/fulfillment.v1.ClusterTemplates/List',
+      '/fulfillment.v1.ClusterTemplates/Create',
+      '/fulfillment.v1.ClusterTemplates/Update',
     ]

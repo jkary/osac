@@ -42,68 +42,68 @@ warn() {
 # Initialize development environment
 init_dev() {
     log "Initializing OSC Config development environment..."
-    
+
     cd "$OSC_CONFIG_ROOT"
-    
+
     # Initialize git submodules
     log "Initializing git submodules..."
     git submodule update --init --recursive
-    
+
     # Check prerequisites
     check_prerequisites
-    
+
     success "Development environment initialized"
 }
 
 # Check development prerequisites
 check_prerequisites() {
     log "Checking development prerequisites..."
-    
+
     local missing_tools=()
-    
+
     # Check container tool
     if ! command -v "$CONTAINER_TOOL" >/dev/null 2>&1; then
         missing_tools+=("$CONTAINER_TOOL")
     fi
-    
+
     # Check kubectl/oc
     if ! command -v "$KUBECTL_CMD" >/dev/null 2>&1; then
         missing_tools+=("$KUBECTL_CMD")
     fi
-    
+
     # Check kustomize
     if ! command -v kustomize >/dev/null 2>&1; then
         warn "kustomize not found. You can use 'kubectl apply -k' instead"
     fi
-    
+
     # Check Go (for building)
     if ! command -v go >/dev/null 2>&1; then
         missing_tools+=("go")
     fi
-    
+
     if [ ${#missing_tools[@]} -ne 0 ]; then
         error "Missing required tools: ${missing_tools[*]}"
     fi
-    
+
     success "All prerequisites satisfied"
 }
 
 # Complete development workflow
 dev_up() {
     log "Starting complete development workflow..."
-    
+
     init_dev
-    
+
     # Build all components
     log "Building all components..."
     "$SCRIPT_DIR/build.sh" all
-    
+
     # Deploy to development environment
     log "Deploying to development environment..."
     "$SCRIPT_DIR/deploy.sh" deploy all
-    
+
     success "Development environment is ready!"
-    
+
     # Show connection information
     show_info
 }
@@ -111,24 +111,24 @@ dev_up() {
 # Stop development environment
 dev_down() {
     log "Stopping development environment..."
-    
+
     "$SCRIPT_DIR/deploy.sh" undeploy
-    
+
     success "Development environment stopped"
 }
 
 # Rebuild and redeploy a component
 dev_update() {
     local component=${1:-all}
-    
+
     log "Updating component: $component"
-    
+
     # Build the component
     "$SCRIPT_DIR/build.sh" "$component"
-    
+
     # Redeploy the component
     "$SCRIPT_DIR/deploy.sh" deploy "$component"
-    
+
     success "Component $component updated"
 }
 
@@ -143,26 +143,26 @@ show_info() {
     echo "Registry: $REGISTRY"
     echo "Kubectl Command: $KUBECTL_CMD"
     echo
-    
+
     echo "=== Services ==="
     if $KUBECTL_CMD get namespace cloudkit-operator-dev >/dev/null 2>&1; then
         echo "CloudKit Operator:"
         echo "  Namespace: cloudkit-operator-dev"
         echo "  Logs: $KUBECTL_CMD logs -n cloudkit-operator-dev deployment/dev-controller-manager -f"
     fi
-    
+
     if $KUBECTL_CMD get namespace fulfillment-service-dev >/dev/null 2>&1; then
         echo "Fulfillment Service:"
         echo "  Namespace: fulfillment-service-dev"
         echo "  Logs: $KUBECTL_CMD logs -n fulfillment-service-dev deployment/dev-fulfillment-service -f"
-        
+
         # Try to get service endpoint
         if $KUBECTL_CMD get service dev-fulfillment-service -n fulfillment-service-dev >/dev/null 2>&1; then
             local port_forward_cmd="$KUBECTL_CMD port-forward -n fulfillment-service-dev service/dev-fulfillment-service 8080:8080"
             echo "  HTTP API: $port_forward_cmd (then access http://localhost:8080)"
         fi
     fi
-    
+
     echo
     echo "=== Useful Commands ==="
     echo "  Watch pods: $KUBECTL_CMD get pods -A -w"
@@ -175,11 +175,11 @@ show_info() {
 # Show logs for a component
 show_logs() {
     local component=${1:-}
-    
+
     if [ -z "$component" ]; then
         error "Please specify a component: cloudkit-operator, fulfillment-service"
     fi
-    
+
     case "$component" in
         "cloudkit-operator"|"operator")
             $KUBECTL_CMD logs -n cloudkit-operator-dev deployment/dev-controller-manager -f
@@ -197,7 +197,7 @@ show_logs() {
 port_forward() {
     local component=${1:-}
     local local_port=${2:-}
-    
+
     case "$component" in
         "fulfillment-service"|"fulfillment")
             local_port=${local_port:-8080}
@@ -226,7 +226,7 @@ COMMANDS:
   info                Show connection and usage information
   logs [component]    Show logs for component
   port-forward [comp] [port]  Port forward to service
-  
+
 COMPONENTS:
   cloudkit-operator    CloudKit Operator
   fulfillment-service  Fulfillment Service

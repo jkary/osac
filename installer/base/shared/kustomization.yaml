@@ -5,13 +5,13 @@ metadata:
   name: cloudkit-shared-base
 
 resources:
-  - namespace.yaml
+- namespace.yaml
 
-# Common annotations for all CloudKit components
-commonAnnotations:
-  cloudkit.io/organization: cloudkit
-  cloudkit.io/project: shared
 
 # Common labels for all CloudKit components
-commonLabels:
-  app.kubernetes.io/part-of: cloudkit 
+labels:
+- includeSelectors: true
+  pairs:
+    app.kubernetes.io/part-of: cloudkit
+- pairs:
+    cloudkit.openshift.io/project: shared

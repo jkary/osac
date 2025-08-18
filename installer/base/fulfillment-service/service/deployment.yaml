@@ -41,38 +41,72 @@ spec:
       - name: envoy-tls
         secret:
           secretName: fulfillment-service-tls
-      - name: scripts
-        configMap:
-          name: fulfillment-service-scripts
-          defaultMode: 0755
-      containers:
+      - name: config-processed
+        emptyDir:
 
-      - name: server
-        image: fulfillment-service
-        imagePullPolicy: Always
+      initContainers:
+      - name: template-processor
+        image: gomplate
+        volumeMounts:
+        - name: config
+          mountPath: /src
+        - name: config-processed
+          mountPath: /dst
+        args:
+        - --input-dir=/src
+        - --output-dir=/dst
         env:
           - name: NAMESPACE
             valueFrom:
               fieldRef:
                 fieldPath: metadata.namespace
-          - name: DB_SERVICE_NAME
-            value: fulfillment-database
+
+      containers:
+
+      - name: server
+        image: fulfillment-service
+        imagePullPolicy: IfNotPresent
         volumeMounts:
         - name: sockets
           mountPath: /run/sockets
-        - name: config
+        - name: config-processed
           mountPath: /etc/fulfillment-service
         - name: cert
           mountPath: /secrets/cert
-        - name: scripts
-          mountPath: /scripts
+        env:
+          - name: NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
+          - name: PGPASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: fulfillment-database-password
+                key: POSTGRES_PASSWORD
         command:
-        - /bin/sh
-        - /scripts/start-server.sh
+        - /usr/local/bin/fulfillment-service
+        - start
+        - server
+        - --log-level=debug
+        - --log-headers=true
+        - --log-bodies=true
+        - "--db-url=postgres://client:$(PGPASSWORD)@fulfillment-database:5432/service?\
+          sslmode=verify-full&\
+          sslcert=/secrets/cert/tls.crt&\
+          sslkey=/secrets/cert/tls.key&\
+          sslrootcert=/secrets/cert/ca.crt"
+        - --grpc-listener-network=unix
+        - --grpc-listener-address=/run/sockets/server.socket
+        - --grpc-authn-type=jwks
+        - --grpc-authn-jwks-url=https://kubernetes.default.svc/openid/v1/jwks
+        - --grpc-authn-jwks-ca-file=/run/secrets/kubernetes.io/serviceaccount/ca.crt
+        - --grpc-authn-jwks-token-file=/run/secrets/kubernetes.io/serviceaccount/token
+        - --grpc-authz-type=rules
+        - --grpc-authz-rules-file=/etc/fulfillment-service/rules.yaml
 
       - name: gateway
         image: fulfillment-service
-        imagePullPolicy: Always
+        imagePullPolicy: IfNotPresent
         volumeMounts:
         - name: sockets
           mountPath: /run/sockets

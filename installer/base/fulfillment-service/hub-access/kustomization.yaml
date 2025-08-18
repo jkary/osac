@@ -3,8 +3,9 @@ kind: Kustomization
 labels:
 - includeSelectors: true
   pairs:
-    component: controller
+    component: hub-access
 
 resources:
 - sa.yaml
-- deployment.yaml
+- rbac.yaml
+- secret.yaml
