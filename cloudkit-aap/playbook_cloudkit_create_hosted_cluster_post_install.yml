@@ -11,6 +11,10 @@
     cluster_order: "{{ ansible_eda.event.payload }}"
 
   pre_tasks:
+    - name: Apply default settings
+      ansible.builtin.include_role:
+        name: cloudkit.service.cluster_settings
+
     - name: Extract template info
       ansible.builtin.include_role:
         name: cloudkit.service.extract_template_info
