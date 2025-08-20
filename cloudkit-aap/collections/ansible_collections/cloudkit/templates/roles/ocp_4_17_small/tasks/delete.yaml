@@ -24,7 +24,7 @@
   ansible.builtin.import_role:
     name: cloudkit.service.cluster_infra
   vars:
-    cluster_infra_state: present
+    cluster_infra_state: absent
     cluster_infra_name: "{{ cluster_order.metadata.name }}"
     cluster_infra_namespace: "{{ cluster_working_namespace }}"
     cluster_infra_node_requests: []
