@@ -84,10 +84,6 @@
 
       rescue:
 
-        - name: Exit due to lock failure
-          when: not lock_acquired | default(false)
-          ansible.builtin.meta: end_play
-
         # Without this, a failure in the template would show up as
         # a successful job run.
         - name: Propagate failure
