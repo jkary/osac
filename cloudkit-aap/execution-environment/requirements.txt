@@ -277,7 +277,7 @@ python-dateutil==2.9.0.post0
     #   aiobotocore
     #   botocore
     #   kubernetes
-python-esiclient==1.3.0
+python-esiclient @ git+https://github.com/cci-moc/python-esiclient.git@b9c4d2971193b6b1c755e0dfdd22fb4eab07f7f7
     # via cloudkit-aap (../pyproject.toml)
 python-esileapclient==1.1.0
     # via cloudkit-aap (../pyproject.toml)

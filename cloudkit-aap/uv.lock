@@ -448,7 +448,7 @@ requires-dist = [
     { name = "jmespath", specifier = ">=1.0.1" },
     { name = "kubernetes", specifier = ">=32.0.1" },
     { name = "pydantic", specifier = ">=2.11.3" },
-    { name = "python-esiclient", specifier = ">=1.3.0" },
+    { name = "python-esiclient", git = "https://github.com/cci-moc/python-esiclient.git?rev=1.4" },
     { name = "python-esileapclient", specifier = ">=1.0.0" },
     { name = "python-ironicclient", specifier = ">=5.10.0" },
     { name = "python-openstackclient", specifier = ">=7.4.0" },
@@ -1396,8 +1396,8 @@ wheels = [
 
 [[package]]
 name = "python-esiclient"
-version = "1.3.0"
-source = { registry = "https://pypi.org/simple" }
+version = "1.4.0"
+source = { git = "https://github.com/cci-moc/python-esiclient.git?rev=1.4#b9c4d2971193b6b1c755e0dfdd22fb4eab07f7f7" }
 dependencies = [
     { name = "ansible-runner" },
     { name = "babel" },
@@ -1415,10 +1415,6 @@ dependencies = [
     { name = "simplejson" },
     { name = "six" },
     { name = "websocket-client" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/99/46/84aaccb0d2bee7e6b24511cef1a892a0b70bafa552c06101c1d85d2ba230/python_esiclient-1.3.0.tar.gz", hash = "sha256:7d1eb13e058de3d2eeef00e0dcd95f2d956817d61cadd754c4f66004c3bf8493", size = 63948, upload-time = "2025-05-19T14:02:03.182Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/23/f4/f19bba742e7a41808c5099bbd3b877e34508c9514693e81a4315d84be3dd/python_esiclient-1.3.0-py3-none-any.whl", hash = "sha256:6037eb6432116806005902381e012c87acca02b40034ea25992e7b5ee0f660c8", size = 86554, upload-time = "2025-05-19T14:02:02.155Z" },
 ]
 
 [[package]]
