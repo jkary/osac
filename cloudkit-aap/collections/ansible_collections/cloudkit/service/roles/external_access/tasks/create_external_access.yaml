@@ -79,7 +79,7 @@
       addr: "{{ external_access_ingress_floating_ip }}"
 
 - name: Wait for DNS records
-  include_role:
+  ansible.builtin.include_role:
     name: cloudkit.service.wait_for
     tasks_from: wait_for_dns
   vars:
@@ -90,14 +90,14 @@
     - "default-router.{{ external_access_ingress_domain }}"
 
 - name: Get managed cluster admin kubeconfig secret
-  include_role:
+  ansible.builtin.include_role:
     name: cloudkit.service.retrieve_kubeconfig
   vars:
     retrieve_kubeconfig_namespace: "{{ cluster_working_namespace }}"
     retrieve_kubeconfig_cluster_name: "{{ cluster_order.metadata.name }}"
 
 - name: Wait for cluster to become ready
-  include_role:
+  ansible.builtin.include_role:
     name: cloudkit.service.wait_for
     tasks_from: wait_for_cluster
   vars:
