@@ -1,7 +1,8 @@
 - name: Wait for DNS record {{ wait_for_dns_record }}
-  ansible.builtin.set_fact:
-    wait_for_dns_info: >-
-      {{ lookup('community.general.dig', wait_for_dns_record, flat=0, real_empty=True) }}
-  until: wait_for_dns_info
+  ansible.builtin.command: >-
+      dig +noall +answer {{ wait_for_dns_record }}
+  register: wait_for_dns_info
+  changed_when: false
+  until: wait_for_dns_info.stdout
   retries: "{{ wait_for_dns_retries }}"
   delay: "{{ wait_for_dns_delay }}"
