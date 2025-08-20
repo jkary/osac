@@ -1,4 +1,7 @@
 ---
+gateway_settings:
+  gateway_access_token_expiration: 7200
+
 # Create a project from the specified git repo
 controller_projects:  # noqa: var-naming[no-role-prefix]
   - name: "{{ aap_prefix }}"
