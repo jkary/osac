@@ -97,6 +97,7 @@ controller_workflows:  # noqa: var-naming[no-role-prefix]
     organization: "{{ aap_organization_name }}"
     ask_variables_on_launch: true
     inventory: "{{ aap_prefix }}-cluster-fulfillment"
+    allow_simultaneous: true
     workflow_nodes:
       - identifier: "create-cluster"
         unified_job_template:
