@@ -34,6 +34,8 @@
     patch:
       - op: remove
         path: /metadata/labels/{{ cluster_order_label | cloudkit.service.json_pointer_escape }}
+      - op: remove
+        path: /metadata/labels/agentMachineRef
   loop: "{{ manage_agents_removed }}"
   loop_control:
     label: "Un-label agent {{ item.metadata.name }}"
