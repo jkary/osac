@@ -15,13 +15,6 @@
    "format": 1
   },
   {
-   "name": "README.md",
-   "ftype": "file",
-   "chksum_type": "sha256",
-   "chksum_sha256": "3bedbca188b424d203ad04d4819f9b1a84801fb3e7bb1522ff036aaecbf3296d",
-   "format": 1
-  },
-  {
    "name": "files",
    "ftype": "dir",
    "chksum_type": null,
@@ -932,27 +925,6 @@
    "format": 1
   },
   {
-   "name": "files/feature/demo-namespace",
-   "ftype": "dir",
-   "chksum_type": null,
-   "chksum_sha256": null,
-   "format": 1
-  },
-  {
-   "name": "files/feature/demo-namespace/kustomization.yaml",
-   "ftype": "file",
-   "chksum_type": "sha256",
-   "chksum_sha256": "f1c145c84360c8862794536d2635f99aaa28d0d92a3dcdbcf42d0c21b7f02d56",
-   "format": 1
-  },
-  {
-   "name": "files/feature/demo-namespace/namespace.yaml",
-   "ftype": "file",
-   "chksum_type": "sha256",
-   "chksum_sha256": "4796fd99978c52303e081cf7dfbe144746d4c9549318c87c7f9cca4a81d73990",
-   "format": 1
-  },
-  {
    "name": "files/feature/grafana",
    "ftype": "dir",
    "chksum_type": null,
@@ -1009,13 +981,6 @@
    "format": 1
   },
   {
-   "name": "files/feature/llm-load-test-exporter/kustomization.yaml",
-   "ftype": "file",
-   "chksum_type": "sha256",
-   "chksum_sha256": "1ab68fe88b7196812dd247dbfbe8d53df17a29b44144117cc57d59c097cb49c7",
-   "format": 1
-  },
-  {
    "name": "files/feature/llm-load-test-exporter/service.yaml",
    "ftype": "file",
    "chksum_type": "sha256",
@@ -1037,17 +1002,17 @@
    "format": 1
   },
   {
+   "name": "files/feature/llm-load-test-exporter/kustomization.yaml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "1ab68fe88b7196812dd247dbfbe8d53df17a29b44144117cc57d59c097cb49c7",
+   "format": 1
+  },
+  {
    "name": "files/feature/minio",
    "ftype": "dir",
    "chksum_type": null,
    "chksum_sha256": null,
-   "format": 1
-  },
-  {
-   "name": "files/feature/minio/kustomization.yaml",
-   "ftype": "file",
-   "chksum_type": "sha256",
-   "chksum_sha256": "586b14ca37cd411746bcddf98dee4a1b39ac1208ed736990127611f51ffa1ea2",
    "format": 1
   },
   {
@@ -1058,6 +1023,13 @@
    "format": 1
   },
   {
+   "name": "files/feature/minio/kustomization.yaml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "586b14ca37cd411746bcddf98dee4a1b39ac1208ed736990127611f51ffa1ea2",
+   "format": 1
+  },
+  {
    "name": "files/feature/models",
    "ftype": "dir",
    "chksum_type": null,
@@ -1065,17 +1037,17 @@
    "format": 1
   },
   {
-   "name": "files/feature/models/granite-3.1-2b-instruct-quantized.yaml",
-   "ftype": "file",
-   "chksum_type": "sha256",
-   "chksum_sha256": "7007c4a560118fe32ba5c2ee100d3c61d67efe12089e8d2ebe0b2a4a05384eaf",
-   "format": 1
-  },
-  {
    "name": "files/feature/models/kustomization.yaml",
    "ftype": "file",
    "chksum_type": "sha256",
    "chksum_sha256": "de004ff67a646d7689ac5d1b820194555475d435bf755bb7d5edabbb01a384de",
+   "format": 1
+  },
+  {
+   "name": "files/feature/models/granite-3.1-2b-instruct-quantized.yaml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "7007c4a560118fe32ba5c2ee100d3c61d67efe12089e8d2ebe0b2a4a05384eaf",
    "format": 1
   },
   {
@@ -1310,6 +1282,13 @@
    "format": 1
   },
   {
+   "name": "files/feature/upload-model/upload-granite-model.yaml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "ca57dc45b467bbb7252574be187339b0b9b2d51dad650315ec9feac1bc3966b7",
+   "format": 1
+  },
+  {
    "name": "files/feature/upload-model/kustomization.yaml",
    "ftype": "file",
    "chksum_type": "sha256",
@@ -1317,10 +1296,24 @@
    "format": 1
   },
   {
-   "name": "files/feature/upload-model/upload-granite-model.yaml",
+   "name": "files/feature/demo-namespace",
+   "ftype": "dir",
+   "chksum_type": null,
+   "chksum_sha256": null,
+   "format": 1
+  },
+  {
+   "name": "files/feature/demo-namespace/kustomization.yaml",
    "ftype": "file",
    "chksum_type": "sha256",
-   "chksum_sha256": "ca57dc45b467bbb7252574be187339b0b9b2d51dad650315ec9feac1bc3966b7",
+   "chksum_sha256": "f1c145c84360c8862794536d2635f99aaa28d0d92a3dcdbcf42d0c21b7f02d56",
+   "format": 1
+  },
+  {
+   "name": "files/feature/demo-namespace/namespace.yaml",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "4796fd99978c52303e081cf7dfbe144746d4c9549318c87c7f9cca4a81d73990",
    "format": 1
   },
   {
@@ -1748,6 +1741,13 @@
    "ftype": "file",
    "chksum_type": "sha256",
    "chksum_sha256": "467eac89e054c19453c924c28e3498241ecafe92f5c0d7882a56861b7f9c88de",
+   "format": 1
+  },
+  {
+   "name": "README.md",
+   "ftype": "file",
+   "chksum_type": "sha256",
+   "chksum_sha256": "3bedbca188b424d203ad04d4819f9b1a84801fb3e7bb1522ff036aaecbf3296d",
    "format": 1
   }
  ],
