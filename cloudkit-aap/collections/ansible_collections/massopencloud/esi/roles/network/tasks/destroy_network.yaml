@@ -30,8 +30,10 @@
     name: massopencloud.esi.l3
     tasks_from: destroy_subnet
   vars:
-    subnet_name: "{{ item.id }}"
+    subnet_name: "{{ subnet.id }}"
   loop: "{{ subnets.subnets }}"
+  loop_control:
+    loop_var: subnet
 
 - name: Destroy network
   ansible.builtin.include_role:
