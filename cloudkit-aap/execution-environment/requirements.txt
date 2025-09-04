@@ -18,8 +18,6 @@ ansible-core==2.18.8
     # via ansible
 ansible-runner==2.4.1
     # via python-esiclient
-appdirs==1.4.4
-    # via esisdk
 attrs==25.3.0
     # via
     #   aiohttp
@@ -47,17 +45,16 @@ cffi==1.17.1
     # via cryptography
 charset-normalizer==3.4.3
     # via requests
-cliff==4.10.0
+cliff==4.11.0
     # via
     #   osc-lib
     #   python-ironicclient
     #   python-openstackclient
 cmd2==2.7.0
     # via cliff
-cryptography==45.0.6
+cryptography==45.0.7
     # via
     #   ansible-core
-    #   esisdk
     #   openstacksdk
     #   python-openstackclient
 debtcollector==3.0.0
@@ -67,19 +64,18 @@ debtcollector==3.0.0
 decorator==5.2.1
     # via
     #   dogpile-cache
-    #   esisdk
     #   openstacksdk
 dnspython==2.7.0
     # via cloudkit-aap (../pyproject.toml)
 dogpile-cache==1.4.0
     # via
-    #   esisdk
     #   openstacksdk
     #   python-ironicclient
 durationpy==0.10
     # via kubernetes
-esisdk==1.4.0
+esisdk==1.5.0
     # via
+    #   cloudkit-aap (../pyproject.toml)
     #   python-esiclient
     #   python-esileapclient
 frozenlist==1.7.0
@@ -94,7 +90,6 @@ idna==3.10
     #   yarl
 iso8601==2.1.0
     # via
-    #   esisdk
     #   keystoneauth1
     #   openstacksdk
     #   oslo-utils
@@ -108,19 +103,16 @@ jmespath==1.0.1
     #   aiobotocore
     #   boto3
     #   botocore
-    #   esisdk
     #   openstacksdk
 jsonpatch==1.33
-    # via
-    #   esisdk
-    #   openstacksdk
+    # via openstacksdk
 jsonpointer==3.0.0
     # via jsonpatch
 jsonschema==4.25.1
     # via python-ironicclient
 jsonschema-specifications==2025.4.1
     # via jsonschema
-keystoneauth1==5.11.1
+keystoneauth1==5.12.0
     # via
     #   esisdk
     #   openstacksdk
@@ -152,8 +144,6 @@ netaddr==1.3.0
     # via
     #   oslo-config
     #   oslo-utils
-netifaces==0.11.0
-    # via esisdk
 oauthlib==3.3.1
     # via
     #   kubernetes
@@ -169,17 +159,16 @@ openstacksdk==4.7.0
     #   python-openstackclient
 os-service-types==1.8.0
     # via
-    #   esisdk
     #   keystoneauth1
     #   openstacksdk
-osc-lib==4.1.0
+osc-lib==4.2.0
     # via
     #   python-esiclient
     #   python-ironicclient
     #   python-openstackclient
 oslo-config==10.0.0
     # via python-keystoneclient
-oslo-i18n==6.5.1
+oslo-i18n==6.6.0
     # via
     #   osc-lib
     #   oslo-config
@@ -188,11 +177,11 @@ oslo-i18n==6.5.1
     #   python-keystoneclient
     #   python-novaclient
     #   python-openstackclient
-oslo-serialization==5.7.0
+oslo-serialization==5.8.0
     # via
     #   python-keystoneclient
     #   python-novaclient
-oslo-utils==9.0.0
+oslo-utils==9.1.0
     # via
     #   osc-lib
     #   oslo-serialization
@@ -209,9 +198,8 @@ packaging==25.0
     #   python-keystoneclient
 passlib==1.7.4
     # via python-esiclient
-pbr==7.0.0
+pbr==7.0.1
     # via
-    #   esisdk
     #   keystoneauth1
     #   metalsmith
     #   openstacksdk
@@ -226,10 +214,9 @@ pbr==7.0.0
     #   python-keystoneclient
     #   python-novaclient
     #   python-openstackclient
-    #   stevedore
 pexpect==4.9.0
     # via ansible-runner
-platformdirs==4.3.8
+platformdirs==4.4.0
     # via
     #   openstacksdk
     #   python-ironicclient
@@ -268,7 +255,7 @@ pyparsing==3.2.3
     # via oslo-utils
 pyperclip==1.9.0
     # via cmd2
-python-cinderclient==9.7.0
+python-cinderclient==9.8.0
     # via python-openstackclient
 python-daemon==3.1.2
     # via ansible-runner
@@ -281,15 +268,15 @@ python-esiclient @ git+https://github.com/cci-moc/python-esiclient.git@b9c4d2971
     # via cloudkit-aap (../pyproject.toml)
 python-esileapclient==1.1.0
     # via cloudkit-aap (../pyproject.toml)
-python-ironicclient==5.12.0
+python-ironicclient==5.13.0
     # via
     #   cloudkit-aap (../pyproject.toml)
     #   python-esiclient
-python-keystoneclient==5.6.0
+python-keystoneclient==5.7.0
     # via python-openstackclient
 python-novaclient==17.4.0
     # via python-esiclient
-python-openstackclient==8.1.0
+python-openstackclient==8.2.0
     # via
     #   cloudkit-aap (../pyproject.toml)
     #   python-esiclient
@@ -299,7 +286,6 @@ pyyaml==6.0.2
     #   ansible-core
     #   ansible-runner
     #   cliff
-    #   esisdk
     #   kubernetes
     #   openstacksdk
     #   oslo-config
@@ -324,9 +310,7 @@ requests==2.32.5
 requests-oauthlib==2.0.0
     # via kubernetes
 requestsexceptions==1.4.0
-    # via
-    #   esisdk
-    #   openstacksdk
+    # via openstacksdk
 resolvelib==1.0.1
     # via ansible-core
 rfc3986==2.0.0
@@ -335,7 +319,7 @@ rich==14.1.0
     # via rich-argparse
 rich-argparse==1.7.1
     # via cmd2
-rpds-py==0.27.0
+rpds-py==0.27.1
     # via
     #   jsonschema
     #   referencing
@@ -353,7 +337,7 @@ six==1.17.0
     #   python-dateutil
     #   python-esiclient
     #   python-esileapclient
-stevedore==5.4.1
+stevedore==5.5.0
     # via
     #   cliff
     #   dogpile-cache
@@ -365,7 +349,7 @@ stevedore==5.4.1
     #   python-keystoneclient
     #   python-novaclient
     #   python-openstackclient
-typing-extensions==4.14.1
+typing-extensions==4.15.0
     # via
     #   keystoneauth1
     #   openstacksdk

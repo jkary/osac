@@ -1,5 +1,5 @@
 version = 1
-revision = 2
+revision = 3
 requires-python = ">=3.13"
 
 [[package]]
@@ -230,15 +230,6 @@ wheels = [
 ]
 
 [[package]]
-name = "appdirs"
-version = "1.4.4"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/d7/d8/05696357e0311f5b5c316d7b95f46c669dd9c15aaeecbb48c7d0aeb88c40/appdirs-1.4.4.tar.gz", hash = "sha256:7d5d0167b2b1ba821647616af46a749d1c653740dd0d2415100fe26e27afdf41", size = 13470, upload-time = "2020-05-11T07:59:51.037Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/3b/00/2344469e2084fb287c2e0b57b72910309874c3245463acd6cf5e3db69324/appdirs-1.4.4-py2.py3-none-any.whl", hash = "sha256:a841dacd6b99318a741b166adb07e19ee71a274450e68237b4650ca1055ab128", size = 9566, upload-time = "2020-05-11T07:59:49.499Z" },
-]
-
-[[package]]
 name = "attrs"
 version = "25.3.0"
 source = { registry = "https://pypi.org/simple" }
@@ -422,6 +413,7 @@ dependencies = [
     { name = "boto3" },
     { name = "botocore" },
     { name = "dnspython" },
+    { name = "esisdk" },
     { name = "jmespath" },
     { name = "kubernetes" },
     { name = "pydantic" },
@@ -445,6 +437,7 @@ requires-dist = [
     { name = "boto3", specifier = ">=1.37.0" },
     { name = "botocore", specifier = ">=1.37.0" },
     { name = "dnspython", specifier = ">=2.7.0" },
+    { name = "esisdk", specifier = ">=1.5.0" },
     { name = "jmespath", specifier = ">=1.0.1" },
     { name = "kubernetes", specifier = ">=32.0.1" },
     { name = "pydantic", specifier = ">=2.11.3" },
@@ -583,27 +576,15 @@ wheels = [
 
 [[package]]
 name = "esisdk"
-version = "1.4.0"
+version = "1.5.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "appdirs" },
-    { name = "cryptography" },
-    { name = "decorator" },
-    { name = "dogpile-cache" },
-    { name = "iso8601" },
-    { name = "jmespath" },
-    { name = "jsonpatch" },
     { name = "keystoneauth1" },
-    { name = "netifaces" },
     { name = "openstacksdk" },
-    { name = "os-service-types" },
-    { name = "pbr" },
-    { name = "pyyaml" },
-    { name = "requestsexceptions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/69/50/b9a507eb1e5f99ee3220bc06025c2e423b841b57c7d2cd525ed170c4d1cf/esisdk-1.4.0.tar.gz", hash = "sha256:f51977ee249020d154032bcf2593b213dc45151a19bacc1cfc0828863170e3fd", size = 35375, upload-time = "2025-01-17T05:35:18.889Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/ae/03/df6e183a156fe28f4d2fadbdd86732bfdb73663401ab639abee48c1c3873/esisdk-1.5.0.tar.gz", hash = "sha256:284ab015ac45e327e41446478f6628348adfcc0f5ae0abe33fcd03e4007a2654", size = 35130, upload-time = "2025-09-04T13:22:09.997Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/be/3a/f03123c32230de644c3d2816ce5b1eb891ad90bbd0acb743ccb556042b09/esisdk-1.4.0-py3-none-any.whl", hash = "sha256:faf54386c1d5f3f7bb334a126654baf5bd01ce714910aac0ce4470456dfbe5e8", size = 51754, upload-time = "2025-01-17T05:35:17.661Z" },
+    { url = "https://files.pythonhosted.org/packages/70/73/d58b72f529e3facbb5ada3d01ee09cc5f0472b72b06000086eae5824e61e/esisdk-1.5.0-py3-none-any.whl", hash = "sha256:f5827ec00e35d9b2821aaa66adcc8605e2f04c42b05d79af52b380b43fd9719f", size = 51676, upload-time = "2025-09-04T13:22:09.098Z" },
 ]
 
 [[package]]
@@ -972,12 +953,6 @@ sdist = { url = "https://files.pythonhosted.org/packages/54/90/188b2a69654f27b22
 wheels = [
     { url = "https://files.pythonhosted.org/packages/12/cc/f4fe2c7ce68b92cbf5b2d379ca366e1edae38cccaad00f69f529b460c3ef/netaddr-1.3.0-py3-none-any.whl", hash = "sha256:c2c6a8ebe5554ce33b7d5b3a306b71bbb373e000bbbf2350dd5213cc56e3dbbe", size = 2262023, upload-time = "2024-05-28T21:30:34.191Z" },
 ]
-
-[[package]]
-name = "netifaces"
-version = "0.11.0"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/a6/91/86a6eac449ddfae239e93ffc1918cf33fd9bab35c04d1e963b311e347a73/netifaces-0.11.0.tar.gz", hash = "sha256:043a79146eb2907edf439899f262b3dfe41717d34124298ed281139a8b93ca32", size = 30106, upload-time = "2021-05-31T08:33:02.506Z" }
 
 [[package]]
 name = "oauthlib"
