@@ -1,11 +1,12 @@
 - name: Get list of existing templates
   ansible.builtin.uri:
     url: "{{ publish_templates_api_endpoint }}"
+    validate_certs: "{{ publish_templates_validate_certs|default(true)|bool }}"
     headers:
       authorization: Bearer {{ cloudkit_fulfillment_service_token }}
   register: template_check
 
-- name: Create list of existing template template ids  # noqa: jinja[invalid]
+- name: Create list of existing template template ids    # noqa: jinja[invalid]
   ansible.builtin.set_fact:
     template_ids: >-
       {{
@@ -20,6 +21,7 @@
   when: template.id in template_ids
   ansible.builtin.uri:
     url: "{{ publish_templates_api_endpoint }}/{{ template.id }}"
+    validate_certs: "{{ publish_templates_validate_certs|default(true)|bool }}"
     method: PATCH
     headers:
       authorization: Bearer {{ cloudkit_fulfillment_service_token }}
@@ -34,6 +36,7 @@
   when: template.id not in template_ids
   ansible.builtin.uri:
     url: "{{ publish_templates_api_endpoint }}"
+    validate_certs: "{{ publish_templates_validate_certs|default(true)|bool }}"
     method: POST
     headers:
       authorization: Bearer {{ cloudkit_fulfillment_service_token }}
