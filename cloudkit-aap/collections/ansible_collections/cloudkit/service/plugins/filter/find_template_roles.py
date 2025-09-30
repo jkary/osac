@@ -155,6 +155,13 @@ class NodeRequest(Base):
     number_of_nodes: int = pydantic.Field(..., validation_alias="numberOfNodes")
 
 
+class NodeSet(Base):
+    """NodeSet represents the template's default bare metal resources"""
+
+    host_class: str
+    size: int
+
+
 class Metadata(Base):
     """Metadata about the template"""
 
@@ -173,9 +180,9 @@ class Template(Base):
     name: str = pydantic.Field(..., exclude=True)
     title: str | None = None
     description: str | None = None
+    default_node_request: list[NodeRequest] = pydantic.Field(exclude=True)
 
     # Not currently supported by the API
-    default_node_request: list[NodeRequest] = pydantic.Field(..., exclude=True)
     allowed_resource_classes: list[str] | None = pydantic.Field(None, exclude=True)
 
     parameters: list[TemplateParameter]
@@ -187,6 +194,16 @@ class Template(Base):
     @pydantic.computed_field
     def id(self) -> str:
         return f"{self.collection}.{self.name}"
+
+    @pydantic.computed_field
+    def node_sets(self) -> dict[str, NodeSet]:
+        return {
+            nr.resource_class: NodeSet(
+                host_class=nr.resource_class,
+                size=nr.number_of_nodes
+            )
+            for nr in self.default_node_request
+        }
 
 
 class Collection(Base):
