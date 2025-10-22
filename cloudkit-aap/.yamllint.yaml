@@ -8,3 +8,5 @@ rules:
     max-spaces-after: 4
   truthy:
     check-keys: false
+  comments:
+    min-spaces-from-content: 1
