@@ -3,7 +3,7 @@ gateway_settings:
   gateway_access_token_expiration: 7200
 
 # Create a project from the specified git repo
-controller_projects:  # noqa: var-naming[no-role-prefix]
+controller_projects: # noqa: var-naming[no-role-prefix]
   - name: "{{ aap_prefix }}"
     description: "{{ aap_project_name }}'s project"
     organization: "{{ aap_organization_name }}"
@@ -17,7 +17,7 @@ controller_projects:  # noqa: var-naming[no-role-prefix]
     wait: true
 
 # Create cluster-fulfillment templates and a config-as-code template
-controller_templates:  # noqa: var-naming[no-role-prefix]
+controller_templates: # noqa: var-naming[no-role-prefix]
   - name: "{{ aap_prefix }}-create-hosted-cluster"
     project: "{{ aap_prefix }}"
     organization: "{{ aap_organization_name }}"
@@ -99,7 +99,7 @@ controller_templates:  # noqa: var-naming[no-role-prefix]
     ask_variables_on_launch: true
     verbosity: 0
 
-controller_job_template_surveys:  # noqa: var-naming[no-role-prefix]
+controller_job_template_surveys: # noqa: var-naming[no-role-prefix]
   - name: "{{ aap_prefix }}-create-hosted-cluster-post-install"
     survey_enabled: true
     survey_spec:
@@ -118,7 +118,7 @@ controller_job_template_surveys:  # noqa: var-naming[no-role-prefix]
           secret: true
 
 # Create workflows for cluster management
-controller_workflows:  # noqa: var-naming[no-role-prefix]
+controller_workflows: # noqa: var-naming[no-role-prefix]
   - name: "{{ aap_prefix }}-create-hosted-cluster-workflow"
     description: "Workflow for hosted cluster creation"
     organization: "{{ aap_organization_name }}"
@@ -141,7 +141,7 @@ controller_workflows:  # noqa: var-naming[no-role-prefix]
 # Create cluster fulfillment and confg-as-code inventories. They are the same
 # for the moment, but spliting them will allow us to diverge easily in the
 # future.
-controller_inventories:  # noqa: var-naming[no-role-prefix]
+controller_inventories: # noqa: var-naming[no-role-prefix]
   - name: "{{ aap_prefix }}-cluster-fulfillment"
     description: "Cluster fulfilment inventory"
     organization: "{{ aap_organization_name }}"
@@ -155,7 +155,7 @@ controller_inventories:  # noqa: var-naming[no-role-prefix]
     description: "VM Operational Inventory"
     organization: "{{ aap_organization_name }}"
 
-controller_inventory_sources:  # noqa: var-naming[no-role-prefix]
+controller_inventory_sources: # noqa: var-naming[no-role-prefix]
   - name: "{{ aap_prefix }}-cluster-fulfillment-is"
     organization: "{{ aap_organization_name }}"
     source: scm
@@ -193,7 +193,7 @@ controller_inventory_sources:  # noqa: var-naming[no-role-prefix]
     overwrite_vars: true
     update_cache_timeout: 0
 
-controller_schedules:  # noqa: var-naming[no-role-prefix]
+controller_schedules: # noqa: var-naming[no-role-prefix]
   # Sync project every 10min to get the latest updates from the git repository
   - name: "{{ aap_prefix }}-sync"
     description: "Periodic sync job for {{ aap_project_name }} project"
@@ -213,7 +213,7 @@ controller_schedules:  # noqa: var-naming[no-role-prefix]
     rrule: "DTSTART:20250513T111500Z RRULE:FREQ=MINUTELY;INTERVAL=30"
 
 # Create custom execution environments
-controller_execution_environments:  # noqa: var-naming[no-role-prefix]
+controller_execution_environments: # noqa: var-naming[no-role-prefix]
   - name: "{{ aap_prefix }}-ee"
     organization: "{{ aap_organization_name }}"
     image: "{{ aap_ee_image }}"
@@ -222,7 +222,7 @@ controller_execution_environments:  # noqa: var-naming[no-role-prefix]
 # Customize pod templates in order to inject the configuration and the
 # credentials when the template are run, that way Kubernetes is the source
 # of truth for the secrets, and we don't need to sync credentials into AAP
-controller_instance_groups:  # noqa: var-naming[no-role-prefix]
+controller_instance_groups: # noqa: var-naming[no-role-prefix]
   # For cluster-fulfillment use cases, we want to allow KubeAPI access to the
   # cluster the pod works on, so we mount the credentials for the cloudkit
   # ServiceAccount. All other credentials (AWS, Openstack, ...) that would be
@@ -260,6 +260,19 @@ controller_instance_groups:  # noqa: var-naming[no-role-prefix]
               - name: kube-api-access
                 mountPath: /var/run/secrets/kubernetes.io/serviceaccount
                 readOnly: true
+            env:
+              - name: POD_NAMESPACE
+                valueFrom:
+                  fieldRef:
+                    fieldPath: metadata.namespace
+              - name: POD_NAME
+                valueFrom:
+                  fieldRef:
+                    fieldPath: metadata.name
+              - name: POD_UID
+                valueFrom:
+                  fieldRef:
+                    fieldPath: metadata.uid
             envFrom:
               - secretRef:
                   name: cluster-fulfillment-ig
