@@ -1,0 +1,11 @@
+argument_specs:
+  main:
+    options:
+      lease_name:
+        type: str
+        required: true
+      lease_holder:
+        type: str
+        required: true
+      lease_labels:
+        type: dict
