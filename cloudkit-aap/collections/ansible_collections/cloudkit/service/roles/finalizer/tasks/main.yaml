@@ -10,7 +10,7 @@
   ansible.builtin.set_fact:
     finalizer_target_resource: "{{ finalizer_resources.resources|first }}"
 
-- name: "Add finalizer to {{ finalizer_target.kind }}/{{ finalizer_target.name }}"
+- name: "Add finalizer to {{ finalizer_target.kind }}/{{ finalizer_target.name }}" # noqa: name[template]
   when: finalizer_state == "present"
   kubernetes.core.k8s:
     state: present
@@ -22,7 +22,7 @@
         name: "{{ finalizer_target.name }}"
         finalizers: "{{ (finalizer_target_resource.metadata.finalizers | default([])) | union([finalizer_name]) }}"
 
-- name: "Remove finalizer from {{ finalizer_target.kind }}/{{ finalizer_target.name }}"
+- name: "Remove finalizer from {{ finalizer_target.kind }}/{{ finalizer_target.name }}" # noqa: name[template]
   when: finalizer_state == "absent"
   kubernetes.core.k8s:
     state: present

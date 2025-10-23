@@ -49,10 +49,22 @@
         lease_holder: "{{ cluster_order_holder_id }}"
         lease_name: "cluster-{{ cluster_order_name }}-lock"
 
+    - name: Add infrastructure finalizer to clusterorder
+      ansible.builtin.include_role:
+        name: cloudkit.service.finalizer
+      vars:
+        finalizer_state: present
+        finalizer_name: "{{ cluster_order_infrastructure_finalizer }}"
+        finalizer_target:
+          api_version: cloudkit.openshift.io/v1alpha1
+          kind: ClusterOrder
+          namespace: "{{ lookup('env', 'POD_NAMESPACE') }}"
+          name: "{{ cluster_order.metadata.name }}"
+
     - name: Display cluster order information
       ansible.builtin.debug:
         msg:
-          - "Cluster order: {{ cluster_order_name }}"
+          - "Cluster order: {{ cluster_order.metadata.name }}"
           - "Cluster working namespace: {{ cluster_working_namespace }}"
           - "Template ID: {{ template_id }}"
 
