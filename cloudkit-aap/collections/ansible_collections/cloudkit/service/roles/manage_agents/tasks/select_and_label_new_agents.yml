@@ -21,10 +21,8 @@
         lease_state: present
         lease_name: "agent-{{ manage_agents_resource_class }}-lock"
         lease_holder: "{{ cluster_order_holder_id }}"
-      register: manage_agents_lease
-      until: manage_agents_lease is successful
-      retries: 20
-      delay: 5
+        lease_retries: 20
+        lease_delay: 5
 
     - name: Retrieve the list of available agents with a matching machine resource class
       kubernetes.core.k8s_info:
