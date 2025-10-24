@@ -163,9 +163,24 @@ controller_workflows: # noqa: var-naming[no-role-prefix]
         related:
           success_nodes:
             - identifier: "post-install"
+          failure_nodes:
+            - identifier: "report-hosted-cluster-status-failure"
       - identifier: "post-install"
         unified_job_template:
           name: "{{ aap_prefix }}-create-hosted-cluster-post-install"
+          type: job_template
+        related:
+          success_nodes:
+            - identifier: "report-hosted-cluster-status-success"
+          failure_nodes:
+            - identifier: "report-hosted-cluster-status-failure"
+      - identifier: "report-hosted-cluster-status-success"
+        unified_job_template:
+          name: "{{ aap_prefix }}-report-hosted-cluster-status-success"
+          type: job_template
+      - identifier: "report-hosted-cluster-status-failure"
+        unified_job_template:
+          name: "{{ aap_prefix }}-report-hosted-cluster-status-failure"
           type: job_template
   - name: "{{ aap_prefix }}-delete-hosted-cluster-workflow"
     description: "Workflow for deleting hosted cluster"
