@@ -1,3 +1,9 @@
+- name: Convert network properties to tags
+  ansible.builtin.set_fact:
+    network_tags: "{{ network_tags + [item.key + '_' + item.value] }}"
+  loop: "{{ network_properties | dict2items }}"
+  when: network_properties | length > 0
+
 - name: Create network
   ansible.builtin.include_role:
     name: massopencloud.esi.l2

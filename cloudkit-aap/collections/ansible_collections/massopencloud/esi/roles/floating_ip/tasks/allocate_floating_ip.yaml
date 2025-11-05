@@ -1,3 +1,9 @@
+- name: Convert floating IP attributes to tags
+  ansible.builtin.set_fact:
+    floating_ip_tags: "{{ floating_ip_tags + [item.key + '_' + item.value] }}"
+  loop: "{{ floating_ip_properties | dict2items }}"
+  when: floating_ip_properties | length > 0
+
 - name: Check if floating ip exists
   openstack.cloud.floating_ip_info:
     description: "{{ floating_ip_name }}"
