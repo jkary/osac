@@ -30,11 +30,17 @@ spec:
       - name: service-tls
         secret:
           secretName: fulfillment-service-tls
+      - name: ca-cert
+        secret:
+          secretName: ca-key
       containers:
       - name: controller
         image: fulfillment-service
         imagePullPolicy: Always
         volumeMounts:
+        - name: ca-cert
+          mountPath: /usr/local/share/ca-certificates/ca.crt
+          subPath: ca.crt
         - name: service-tls
           mountPath: /etc/fulfillment-service/tls
         command:
@@ -46,5 +52,5 @@ spec:
         - --log-bodies=true
         - --grpc-server-network=tcp
         - --grpc-server-address=fulfillment-api:8000
-        - --token-file=/var/run/secrets/kubernetes.io/serviceaccount/token
-        - --ca-file=/etc/fulfillment-service/tls
+        - --grpc-token-file=/var/run/secrets/kubernetes.io/serviceaccount/token
+        - --ca-file=/usr/local/share/ca-certificates/ca.crt

@@ -61,8 +61,6 @@ spec:
         name: bootstrap
         args:
         - ansible-playbook
-        - -vvv
-        - --diff
         - cloudkit.config_as_code.subscription
         - cloudkit.config_as_code.configure
         envFrom:
@@ -88,4 +86,4 @@ spec:
         secret:
           secretName: config-as-code-manifest-ig
       restartPolicy: Never
-  backoffLimit: 4
+  backoffLimit: 20
