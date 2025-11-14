@@ -17,8 +17,6 @@ argument_specs:
           resourceClass:
             type: str
             required: true
-            choices:
-            - fc430
       template_parameters:
         type: dict
         options:

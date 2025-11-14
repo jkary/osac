@@ -13,5 +13,4 @@ default_node_request:
 # classes listed here may be used when requesting additional nodes. If this
 # list is empty or unspecified, a ClusterOrder may request nodes from any
 # available resource class.
-allowed_resource_classes:
-- fc430
+allowed_resource_classes: []
