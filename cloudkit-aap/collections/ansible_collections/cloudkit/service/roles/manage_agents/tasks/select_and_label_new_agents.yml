@@ -78,8 +78,8 @@
         manage_agents_added: >
           {{ manage_agents_added.results | selectattr('changed') | map(attribute='agent') }}
 
-    - name: Print a message if not all agents were added
-      ansible.builtin.debug:
+    - name: Fail if not all agents were added
+      ansible.builtin.fail:
         msg: "{{ manage_agents_added | length }} agents were added to the cluster instead of {{ manage_agents_selected_count }}. Please check agents availability."
       when: manage_agents_added | length != manage_agents_selected_count | int
 
