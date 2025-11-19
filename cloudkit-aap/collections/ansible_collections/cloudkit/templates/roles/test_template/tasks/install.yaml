@@ -1,0 +1,7 @@
+- name: Create hosted cluster
+  ansible.builtin.debug:
+    msg: "Install tasks"
+
+- name: Fail if requested
+  when: template_parameters.fail_install|default(false)
+  fail:
