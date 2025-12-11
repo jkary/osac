@@ -11,7 +11,7 @@ The OSAC solution assumes the following components are installed:
 - Red Hat Advanced Cluster Management
 - Red Hat Ansible Automation Platform
 - Cert Manager
-- Red Hat Openshift Virtualization with the desired storageclass
+- Red Hat OpenShift Virtualization with the desired storageclass
 
 The manifests provided in this directory are meant as examples only and can serve to be
 useful for developers and admins.

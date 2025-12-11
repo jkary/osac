@@ -1,366 +1,303 @@
-# CloudKit Installer
+# OSAC Installer
 
-This repository contains Kubernetes/OpenShift deployment configurations for the CloudKit platform, providing comprehensive cluster lifecycle management through multiple integrated components.
+This repository contains Kubernetes/OpenShift deployment configurations for the OSAC
+platform, providing a fulfillment service framework for clusters and virtual machines.
+
+> **Note:** Throughout this guide, `<project-name>` refers to your unique OSAC installation
+> name, which is used as both the namespace and resource prefix. Replace it with your chosen
+> project name (e.g., `user1`, `team-a`, etc.).
 
 ## Overview
 
-CloudKit is a comprehensive platform that provides:
+OSAC (OpenShift Self-service Advanced Clusters) provides a streamlined, self-service
+framework for provisioning and managing OpenShift clusters and virtual machines. This
+installer repository contains the Kubernetes/OpenShift deployment configurations needed
+to deploy OSAC components on your infrastructure.
 
-- **Cluster Lifecycle Management** - Automated cluster provisioning, scaling, and decommissioning
-- **Event Driven Automation** - Responds to cluster events and webhook notifications
-- **Service Management** - Fulfillment services for cluster operations
-- **Configuration as Code** - Manages cluster configurations through Ansible playbooks and Kubernetes manifests
+For detailed architecture, workflows, and design documentation, please refer to the
+[OSAC documentation repository](https://github.com/innabox/docs).
 
-## Architecture
+The OSAC platform provides:
+- **Self-service provisioning** for clusters and virtual machines through a governed API
+- **Template-based automation** using Red Hat Ansible Automation Platform
+- **Multi-hub support** allowing multiple infrastructure hubs to be managed by a single fulfillment service
+- **API access** via both gRPC and REST interfaces for integration with custom tools
 
-The CloudKit platform consists of three main components:
+This installer uses Kustomize to manage deployments, making it easy to customize for
+different environments.
 
-1. **CloudKit AAP (Ansible Automation Platform)** - Automated cluster provisioning and lifecycle management
-2. **CloudKit Operator** - Kubernetes operator for cluster order management and HyperShift integration
-3. **Fulfillment Service** - Backend service for cluster fulfillment operations with PostgreSQL database
+## OSAC Components
 
-## Prerequisites
+The OSAC platform relies on three core components to deliver governed self-service:
 
-Before deploying CloudKit, ensure you have:
+1. **Fulfillment Service:**
+   The API and frontend entry point used to manage user requests and map them to specific
+   templates.
 
-### Core Requirements
-- OpenShift cluster with admin access (version 4.17+ recommended)
-- `oc` CLI configured with cluster admin privileges
-- `kustomize` CLI tool (or use `oc apply -k`)
+2. **OSAC Operator:**
+   An OpenShift operator residing on the Hub cluster (ACM/OCP-Virt). It orchestrates the
+   lifecycle of clusters and VMs by coordinating between the Fulfillment Service and the
+   automation backend.
 
-### Certificate Management
-- **cert-manager** operator installed and configured
-- Certificate issuers configured for TLS certificate management
-- Required for secure communication between components
+3. **Automation Backend (AAP):**
+   Leverages the **Red Hat Ansible Automation Platform** to store and execute the custom
+   template logic required for provisioning.
 
-### HyperShift Integration
-- **MultiCluster Engine (MCE)** installed with HyperShift support
-- HyperShift operator deployed and configured
-- Required for hosted cluster management capabilities
+### Prerequisites & Setup
 
-### Component-Specific Prerequisites
+> **System Requirements** This solution requires the following platforms to be installed
+> and operational:
+> * Red Hat OpenShift Advanced Cluster Management (RHACM)
+> * Red Hat OpenShift Virtualization (OCP-Virt) - **Optional**: Only required for VM as a Service (VMaaS) support
+> * Red Hat Ansible Automation Platform (AAP)
+> * ESI (Elastic System Infrastructure) - Required for bare metal provisioning
 
-#### CloudKit AAP
-- **Red Hat Ansible Automation Platform Operator** installed
-- **Red Hat Advanced Cluster Management (ACM)** installed (for cluster provisioning)
-- **Valid AAP license manifest** - Download from [Red Hat Customer Portal](https://access.redhat.com/downloads/content/480/ver=2.4/rhel---9/2.4/x86_64/product-software) as `License.zip`
-- Container registry credentials for execution environments
+**Configuration Manifests**
 
-#### CloudKit Operator
-- **HyperShift CRDs** (`HostedCluster`, `NodePool`) available
-- **ClusterOrder CRDs** deployed
-- Proper RBAC permissions for cluster-wide operations
+The `/prerequisites` directory contains additional manifests required to configure the
+target Hub cluster.
 
-#### Fulfillment Service
-- **PostgreSQL** for database storage
-- **TLS certificates** for secure database connections
-- **Private registry access** for container images
+> **⚠️ Important: Cluster-Wide Impact** If you are using a shared cluster or are not the
+> primary administrator, **do not apply these manifests without consultation.** These
+> files modify cluster-wide settings. Please coordinate with the appropriate cluster
+> administrators before proceeding.
 
-## Repository Structure
 
-```
-cloudkit-installer/
-├── base/                           # Base Kustomize configurations
-│   ├── shared/                     # Shared namespace and resources
-│   ├── cloudkit-aap/              # Ansible Automation Platform
-│   ├── cloudkit-operator/         # CloudKit Operator
-│   └── fulfillment-service/       # Fulfillment Service
-│       ├── ca/                    # Certificate Authority setup
-│       ├── database/              # PostgreSQL database
-│       ├── service/               # Main service deployment
-│       ├── controller/            # Controller component
-│       ├── admin/                 # Admin service account
-│       └── client/                # Client service account
-├── overlays/                      # Environment-specific overlays
-│   └── development/               # Development environment
-│       ├── cloudkit-aap/
-│       ├── cloudkit-operator/
-│       └── fulfillment-service/
-└── README.md
-```
+### 📋 Prerequisites Summary
 
-## Components
+| **Category** | **Requirement** | **Notes / Details** |
+|---------------|-----------------|----------------------|
+| **Platform** | Red Hat OpenShift Container Platform (OCP) 4.17 or later | Must have cluster admin access to the hub cluster. |
+| **Operators** | Red Hat Advanced Cluster Management (RHACM) 2.18+<br>Red Hat OpenShift Virtualization (OCP-Virt) 4.17+<br>Red Hat Ansible Automation Platform (AAP) 2.5+ | These must be installed and running prior to OSAC installation. |
+| **CLI Tools** | `oc` (OpenShift CLI) v4.17+<br>`kubectl` (optional)<br>`kustomize` v5.x<br>`git` | Ensure all CLIs are available in your `PATH`. |
+| **Container Registry Access** | `registry.redhat.io` and `quay.io` | Verify credentials and pull secrets are valid in the target cluster namespace. |
+| **Network / DNS** | Ingress route configured for OSAC services | Required for external access to fulfillment API and AAP UI. |
+| **Authentication / IDM** | Organization Identity Provider (e.g., Keycloak, LDAP, RH-SSO) | Used for tenant and user identity mapping. |
+| **Storage** | Dynamic storage class available (e.g., `ocs-storagecluster-cephfs`, `lvms-storage`) | Required for persistence of operator and AAP components. |
+| **Permissions** | Cluster-admin access to deploy operators and create CRDs | Limited access users can only deploy into namespaces configured by the admin. |
+| **License Files** | `license.zip` (AAP subscription) | Must be placed under `overlays/<your-overlay>/files/license.zip`. |
+| **Internet Access** | Outbound access to GitHub (for fetching submodules, releases) | Required during installation and updates. |
 
-### 1. CloudKit AAP (Ansible Automation Platform)
 
-Provides automated cluster provisioning and lifecycle management through:
-- **Controller**: Job template management and execution
-- **EDA (Event Driven Automation)**: Webhook processing and event handling
-- **Bootstrap Job**: Initial configuration of AAP resources
+## Installation Strategy
 
-### 2. CloudKit Operator
+OSAC uses Kustomize for installation. This approach allows you to easily override and
+customize your deployment to meet specific needs. Multiple OSAC installations can be
+deployed on the same cluster, each in its own project namespace.
 
-Kubernetes operator that manages:
-- **ClusterOrder CRDs**: Custom resources for cluster provisioning requests
-- **HyperShift Integration**: Management of hosted clusters
-- **Namespace Management**: Automatic namespace creation and RBAC
-- **Service Account Management**: Cluster-specific service accounts
+To manage dependencies, the OSAC-installer repository uses Git submodules to import the
+required manifests from each component. This ensures component versions are pinned and
+compatible with the installer.
 
-### 3. Fulfillment Service
+### Customizing Your Installation
 
-Backend service providing:
-- **Database**: PostgreSQL for persistent storage
-- **Service**: Main fulfillment service with gRPC API
-- **Controller**: Fulfillment operation management
-- **Gateway**: HTTP/gRPC gateway with Envoy proxy
+Although the development overlay will work out of the box, we recommend customizing your
+overlay by creating a new project-specific configuration. This is especially important
+when deploying on shared clusters to avoid resource name collisions.
 
-## Installation
+Use Kustomize to manage your environment-specific configurations.
 
-### Step 1: Install Prerequisites
+1. **Choose a Project Name:**
+   Select a unique name for your OSAC installation (e.g., `user1`, `team-a`, `dev-env`).
+   This will be used as your namespace and resource prefix. In the examples below, we'll
+   use `<project-name>` as a placeholder.
 
-#### Install cert-manager
-```bash
-# Install cert-manager operator
-oc apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.13.0/cert-manager.yaml
+2. **Initialize the Overlay:**
+   Duplicate the development template with your project name:
 
-# Wait for cert-manager to be ready
-oc wait --for=condition=Available deployment/cert-manager -n cert-manager --timeout=300s
-```
+   ```bash
+   $ cp -r overlays/development overlays/<project-name>
+   ```
 
-#### Install MultiCluster Engine with HyperShift
-```bash
-# Create MCE namespace
-oc new-project multicluster-engine
+3. **Populate Required Files:**
+   Ensure your new directory structure matches the following:
 
-# Install MCE operator
-cat << EOF | oc apply -f -
-apiVersion: operators.coreos.com/v1
-kind: OperatorGroup
-metadata:
-  name: multicluster-engine
-  namespace: multicluster-engine
-spec:
-  targetNamespaces:
-  - multicluster-engine
----
-apiVersion: operators.coreos.com/v1alpha1
-kind: Subscription
-metadata:
-  name: multicluster-engine
-  namespace: multicluster-engine
-spec:
-  channel: stable-2.8
-  name: multicluster-engine
-  source: redhat-operators
-  sourceNamespace: openshift-marketplace
-EOF
+   ```
+   overlays/<project-name>/
+   ├── kustomization.yaml      # Edit this to configure your deployment
+   ├── prefixTransformer.yaml  # Edit this to set resource name prefix
+   └── files/
+       └── license.zip         # REQUIRED: Your AAP license file
+   ```
 
-# Create MCE instance
-cat << EOF | oc apply -f -
-apiVersion: multicluster.openshift.io/v1
-kind: MultiClusterEngine
-metadata:
-  name: multiclusterengine
-  namespace: multicluster-engine
-spec:
-  availabilityConfig: Basic
-  targetNamespace: multicluster-engine
-EOF
+4. **Update Critical Configuration:**
+   You **must** update these two configuration values to match your `<project-name>`:
 
-# Wait for MCE to be ready
-oc wait --for=condition=Available multiclusterengine/multiclusterengine -n multicluster-engine --timeout=600s
-```
+   - In `kustomization.yaml`: Update the `namespace` field to `<project-name>`
+   - In `prefixTransformer.yaml`: Update the `prefix` field to `<project-name>-`
 
-### Step 2: Deploy CloudKit Components
+   These changes ensure your installation uses a unique namespace and prevents resource
+   name conflicts with other OSAC installations.
 
-#### Development Environment
-```bash
-# Set required environment variables
-export AAP_USERNAME="admin"
-export AAP_PASSWORD="your-aap-password"
-export LICENSE_MANIFEST_PATH="/path/to/license.zip"
+5. **Apply Additional Customizations:**
+   Modify other settings in your overlay folder as needed (images, patches, etc.).
 
-# Deploy all components
-oc apply -k overlays/development/
 
-# Wait for deployment to complete
-oc wait --for=condition=Available deployment/dev-fulfillment-service -n foobar --timeout=300s
-oc wait --for=condition=Available deployment/dev-controller-manager -n foobar --timeout=300s
-```
+> For more information on structuring overlays and patches, please consult the [official
+> Kustomize documentation.](https://kubectl.docs.kubernetes.io/references/kustomize/)
 
-## Configuration
 
-### Environment Variables
+### Obtaining an AAP License
 
-For AAP configuration, set these environment variables:
+Download AAP license manifest from [Red Hat Customer
+Portal](https://access.redhat.com/downloads/content/480/ver=2.5/rhel---9/2.5/x86_64/product-software)
+
+## Deploying OSAC Components
+
+Once you have customized your overlay, deploy the OSAC components to your cluster.
+
+### Install and Monitor Progress
 
 ```bash
-export AAP_USERNAME="admin"              # AAP administrator username
-export AAP_PASSWORD="your-password"      # AAP administrator password
-export LICENSE_MANIFEST_PATH="/path/to/license.zip"  # Path to AAP license
+# Deploy using your project-specific overlay
+$ oc apply -k overlays/<project-name>
+
+# Monitor pod creation and startup
+$ watch oc get -n <project-name> pods
 ```
 
-**Note**: The AAP license file must be named exactly `License.zip` (with capital L) and can be downloaded from the [Red Hat Customer Portal](https://access.redhat.com/downloads/content/480/ver=2.4/rhel---9/2.4/x86_64/product-software). Navigate to your AAP subscription and download the license manifest.
+Several pods restart during initialization. The OpenShift job named `aap-bootstrap`
+restarts several times before completing. This is expected behavior.
 
-### Registry Credentials
+Once the `aap-bootstrap` job completes, OSAC is ready for use.
 
-Update container registry credentials in:
-- `overlays/development/dockerconfig.json` for development
-- Include credentials for accessing private registries (quay.io, registry.redhat.io, etc.)
-
-### TLS Certificates
-
-The fulfillment service uses cert-manager for TLS certificate management:
-- CA certificates are automatically generated
-- Service certificates are issued for database connections
-- API certificates are issued for service endpoints
-
-## Verification
-
-### Check Deployment Status
+**Alternative: Install with Wait Option**
 
 ```bash
-# Check all pods in the deployment namespace
-oc get pods -n foobar
-
-# Check specific components
-oc get pods -n foobar -l app=fulfillment-service
-oc get pods -n foobar -l app.kubernetes.io/name=cloudkit-operator
-oc get ansibleautomationplatform -n foobar
-
-# Check certificates
-oc get certificates -n foobar
+# Wait for all deployments to be ready (blocking command)
+$ oc wait --for=condition=Available deployment --all -n <project-name> --timeout=600s
 ```
 
-### Check Component Health
+## Fulfillment CLI: Setup & Usage
+
+To install the CLI and register a hub, follow these steps:
+
+### 1. Install the Binary
+
+Download the latest release and make it executable.
 
 ```bash
-# CloudKit Operator
-oc logs -n foobar deployment/dev-controller-manager -f
+# Adjust URL for the latest version as needed
+$ curl -L -o fulfillment-cli \
+    https://github.com/innabox/fulfillment-cli/releases/latest/download/fulfillment-cli-linux-amd64
+$ chmod +x fulfillment-cli
 
-# Fulfillment Service
-oc logs -n foobar deployment/dev-fulfillment-service -c server -f
-
-# Database
-oc logs -n foobar statefulset/dev-fulfillment-database -f
-
-# AAP Bootstrap Job
-oc logs -n foobar job/dev-aap-bootstrap -f
+# Optional: Move to your path
+$ sudo mv fulfillment-cli /usr/local/bin/
 ```
 
-### Verify Prerequisites
+### 2. Log in to the Service
+
+Authenticate with the fulfillment API. You will need the route address and a valid
+token generation script.
 
 ```bash
-# Check cert-manager
-oc get pods -n cert-manager
-
-# Check HyperShift CRDs
-oc get crd | grep hypershift
-oc get crd | grep clusterorder
-
-# Check MultiCluster Engine
-oc get multiclusterengine -n multicluster-engine
+$ fulfillment-cli login \
+    --address <your-fulfillment-route-url> \
+    --token-script "oc create token fulfillment-controller -n <project-name> \
+    --duration 1h --as system:admin" \
+    --insecure
 ```
 
-## Customization
+> **Tip:** Retrieve your route URL using: `oc get routes -n <project-name>`
 
-### Adding New Environments
+### 3. Register the Hub
 
-To create a new environment overlay:
+To allow the OSAC operator to communicate with the fulfillment service, you must
+obtain the kubeconfig and register the hub. The script located at
+`scripts/create-hub-access-kubeconfig.sh` demonstrates how to generate the kubeconfig
+for a hub.
 
-1. Create new directory under `overlays/`
-2. Copy and modify kustomization.yaml from development
-3. Create environment-specific patch files
-4. Update environment variables and secrets
+```bash
+# Generate the kubeconfig
+$ ./scripts/create-hub-access-kubeconfig.sh
 
-### Modifying Components
+# Register the Hub
+$ fulfillment-cli create hub \
+    --kubeconfig=kubeconfig.hub-access \
+    --id <hub-name> \
+    --namespace <project-name>
+```
 
-Each component can be customized by:
+> **Note:** Refer to `base/fulfillment-service/hub-access/README.md` for more information
 
-1. Editing base configurations in `base/component-name/`
-2. Creating overlay patches for environment-specific changes
-3. Testing changes in development overlay first
-4. Validating with `kustomize build` before applying
+### 4. Use the CLI
 
-## Security Considerations
+Once configured, you can use the fulfillment CLI to manage clusters and virtual machines.
+For detailed usage instructions and command reference, see the
+[fulfillment-cli documentation](https://github.com/innabox/fulfillment-cli).
 
-### Certificate Management
-- All inter-service communication uses TLS
-- Certificates are managed by cert-manager
-- CA certificates are automatically rotated
+## Accessing Ansible Automation Platform
 
-### RBAC
-- Each component has minimal required permissions
-- Service accounts are created per component
-- Cluster-wide permissions are limited to necessary operations
+After deployment, you can access the AAP web interface to monitor jobs and manage automation:
 
-### Network Security
-- Services communicate over TLS
-- Database connections use SSL/TLS
-- Network policies can be applied for additional isolation
+### Get the AAP URL
+
+```bash
+$ oc get route -n <project-name> | grep innabox-aap
+```
+
+AAP routes will contain 'innabox-aap' in the name.
+
+> **Note:** The main AAP URL will be something like: `https://innabox-aap-<project-name>.apps.your-cluster.com`
+
+### Get the AAP Admin Password
+
+```bash
+# Extract the admin password
+$ oc extract secret/innabox-aap-admin-password -n <project-name> --to -
+```
+
+### Login to AAP
+
+- Open the AAP controller URL in your browser
+- Username: `admin`
+- Password: (from the previous step)
+
+### Using AAP Interface
+
+From the AAP web interface, you can:
+- Monitor cluster provisioning jobs and their status
+- View automation execution logs and troubleshoot failures
+- Manage job templates and automation workflows
+- Configure additional automation tasks
+- View inventory and host information
 
 ## Troubleshooting
 
 ### Common Issues
 
 1. **cert-manager not ready**: Ensure cert-manager operator is installed and running
-2. **HyperShift CRDs missing**: Verify MultiCluster Engine is deployed with HyperShift enabled
-3. **Certificate issues**: Check cert-manager logs and certificate status
-4. **Database connection failures**: Verify database certificates and connectivity
-5. **cloudkit-operator CrashLoopBackOff**: Usually indicates missing HyperShift permissions or CRDs not available
-6. **ImagePullBackOff errors**: Verify registry credentials in `dockerconfig.json` and `dev-quay-pull-secret`
-7. **namePrefix conflicts**: Certificate and secret name mismatches due to kustomize namePrefix application
+2. **Certificate issues**: Check cert-manager logs and certificate status
+3. **ImagePullBackOff errors**: Verify registry credentials in `files/quay-pull-secret.json` and image string
 
 ### Debug Commands
 
 ```bash
 # Check certificate status
-oc describe certificate -n foobar
+$ oc describe certificate -n <project-name>
 
 # Check certificate issuer status
-oc describe issuer -n foobar
+$ oc describe issuer -n <project-name>
 
 # Check pod events
-oc describe pod -n foobar <pod-name>
+$ oc describe pod -n <project-name> <pod-name>
 
 # Check service endpoints
-oc get endpoints -n foobar
+$ oc get endpoints -n <project-name>
 
 # Check secrets
-oc get secrets -n foobar
+$ oc get secrets -n <project-name>
 
-# Check HyperShift CRDs and permissions
-oc get crd | grep hypershift
-oc get clusterrole dev-manager-role -o yaml | grep -A 10 hypershift
-oc get clusterrolebinding dev-manager-rolebinding -o yaml
+# View component logs
+$ oc logs -n <project-name> deployment/fulfillment-service -c server --tail=100
+$ oc logs -n <project-name> deployment/<project-name>-controller-manager --tail=100
 
-# Check MultiCluster Engine status
-oc get multiclusterengine -n multicluster-engine
-oc get pods -n multicluster-engine
-oc get pods -n hypershift
-```
-
-### Log Analysis
-
-```bash
 # Get all events in namespace
-oc get events -n foobar --sort-by=.metadata.creationTimestamp
-
-# Check resource usage
-oc top pods -n foobar
-
-# Component-specific logs
-oc logs -n foobar deployment/dev-fulfillment-service -c server --tail=100
-oc logs -n foobar deployment/dev-controller-manager --tail=100
-oc logs -n foobar statefulset/dev-fulfillment-database --tail=100
+$ oc get events -n <project-name> --sort-by=.metadata.creationTimestamp
 ```
 
-## Development
 
-### Prerequisites for Development
-
-- Understanding of Kubernetes/OpenShift
-- Familiarity with Kustomize
-- Knowledge of cert-manager and HyperShift
-- Experience with PostgreSQL and gRPC services
-
-### Testing Changes
-
-1. Test in development environment first
-2. Validate with `kustomize build overlays/development/`
-3. Check for resource conflicts
-4. Verify certificate generation
-5. Test service connectivity
 
 ## Support
 
@@ -368,9 +305,8 @@ For issues and questions:
 - Check the troubleshooting section above
 - Review component logs for error messages
 - Verify prerequisites are properly installed
-- Consult cert-manager and HyperShift documentation
-- Open an issue in the component repository
+- Open issues in the respective component repositories
 
 ## License
 
-This project is licensed under the Apache License, Version 2.0.
+This project is licensed under the [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0).
