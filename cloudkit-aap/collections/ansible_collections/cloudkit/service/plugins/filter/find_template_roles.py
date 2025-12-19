@@ -197,22 +197,15 @@ class Metadata(Base):
     allowed_resource_classes: list[str] | None = None
 
 
-class Template(Base):
-    """Template represents a single template role"""
+class BaseTemplate(Base):
+    """Base class for all template types"""
 
     collection: str = pydantic.Field(..., exclude=True)
     path: Path = pydantic.Field(..., exclude=True)
-
     name: str = pydantic.Field(..., exclude=True)
     title: str | None = None
     description: str | None = None
-    default_node_request: list[NodeRequest] = pydantic.Field(exclude=True)
     template_type: TemplateTypeEnum = pydantic.Field(exclude=True)
-
-    # Not currently supported by the API
-    allowed_resource_classes: list[str] | None = pydantic.Field(
-        None, exclude=True)
-
     parameters: list[TemplateParameter]
 
     @pydantic.field_serializer("path")
@@ -223,6 +216,14 @@ class Template(Base):
     def id(self) -> str:
         return f"{self.collection}.{self.name}"
 
+
+class ClusterTemplate(BaseTemplate):
+    """Template for cluster deployments"""
+
+    template_type: Literal[TemplateTypeEnum.cluster] = TemplateTypeEnum.cluster
+    default_node_request: list[NodeRequest] = pydantic.Field(default=[], exclude=True)
+    allowed_resource_classes: list[str] | None = pydantic.Field(None, exclude=True)
+
     @pydantic.computed_field
     def node_sets(self) -> dict[str, NodeSet] | None:
         ret = {
@@ -231,8 +232,14 @@ class Template(Base):
             )
             for nr in self.default_node_request
         }
-
         return ret if ret else None
+
+
+class VMTemplate(BaseTemplate):
+    """Template for VM deployments"""
+
+    template_type: Literal[TemplateTypeEnum.vm] = TemplateTypeEnum.vm
+
 
 def _validate_collection_name(name: str) -> None:
     """Validate that collection name follows namespace.collection format.
@@ -344,11 +351,11 @@ class Collection(Base):
 
         return template_params
 
-    def templates(self) -> Generator[Template, None, None]:
+    def templates(self) -> Generator[BaseTemplate, None, None]:
         """Generate Template objects for all roles in this collection.
 
         Yields:
-            Template objects for each valid role found
+            BaseTemplate objects (ClusterTemplate or VMTemplate) for each valid role found
         """
         roles_dir = self.parent_path / self.name.replace(".", "/") / "roles"
 
@@ -371,18 +378,23 @@ class Collection(Base):
             params = self.read_params_for_role(path)
             if metadata is not None:
                 try:
-                    template = Template(
-                        collection=self.name,
-                        path=path,
-                        name=path.name,
-                        title=metadata.title,
-                        description=metadata.description,
-                        template_type=metadata.template_type,
-                        default_node_request=metadata.default_node_request,
-                        allowed_resource_classes=metadata.allowed_resource_classes,
-                        parameters=params,
-                    )
-                    yield template
+                    common = {
+                        "collection": self.name,
+                        "path": path,
+                        "name": path.name,
+                        "title": metadata.title,
+                        "description": metadata.description,
+                        "parameters": params,
+                    }
+
+                    if metadata.template_type == TemplateTypeEnum.cluster:
+                        yield ClusterTemplate(
+                            **common,
+                            default_node_request=metadata.default_node_request,
+                            allowed_resource_classes=metadata.allowed_resource_classes,
+                        )
+                    else:
+                        yield VMTemplate(**common)
                 except Exception as e:
                     display.warning(
                         f"Failed to create template for role '{path.name}' in collection '{self.name}': {e}"
@@ -390,14 +402,14 @@ class Collection(Base):
                     continue
 
 
-def find_template_roles(requested: list[str]) -> Generator[Template, None, None]:
+def find_template_roles(requested: list[str]) -> Generator[BaseTemplate, None, None]:
     """Find template roles in requested Ansible collections.
 
     Args:
         requested: List of collection names to search
 
     Yields:
-        Template objects found in the collections
+        BaseTemplate objects (ClusterTemplate or VMTemplate) found in the collections
     """
     display.vv(f"Searching for templates in collections: {', '.join(requested)}")
 
@@ -506,7 +518,12 @@ def find_template_roles_filter(
                     )
 
             display.vv(f"Filtering templates by type: {template_type.value}")
-            roles = (role for role in roles if role.template_type == template_type)
+
+            # Use isinstance for type-safe filtering
+            if template_type == TemplateTypeEnum.cluster:
+                roles = (role for role in roles if isinstance(role, ClusterTemplate))
+            else:
+                roles = (role for role in roles if isinstance(role, VMTemplate))
 
         result = [
             role.model_dump(by_alias=True, exclude_none=True)
@@ -537,7 +554,6 @@ class FilterModule:
         return {
             "find_template_roles": find_template_roles_filter,
         }
-
 
 
 if __name__ == "__main__":
