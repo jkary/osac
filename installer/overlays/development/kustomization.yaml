@@ -16,12 +16,12 @@ labels:
 
 resources:
 - ../../base
+- ./ca-trust-bundle.yaml
 
 generatorOptions:
   disableNameSuffixHash: true
 
 secretGenerator:
-
 # This expects to find quay credentials in
 # files/quay-pull-secret.json.
 - name: quay-pull-secret
@@ -32,11 +32,8 @@ secretGenerator:
 # This expects to find an AAP license manifest
 # in files/license.zip.
 - name: config-as-code-manifest-ig
-  options:
-    labels:
-      cloudkit.openshift.io/project: cloudkit-aap
   files:
-  - license.zip=files/license.zip
+    - license.zip=files/license.zip
 
 patches:
   - patch: |
@@ -48,16 +45,57 @@ patches:
         template:
           spec:
             containers:
-            - name: server
-              command:
-              - /usr/local/bin/fulfillment-service
-              - start
-              - server
-              - --log-level=debug
-              - --log-headers=true
-              - --log-bodies=true
-              - --db-url=postgres://client:$(PGPASSWORD)@fulfillment-database:5432/service?sslmode=verify-full&sslcert=/secrets/cert/tls.crt&sslkey=/secrets/cert/tls.key&sslrootcert=/secrets/cert/ca.crt
-              - --grpc-listener-network=unix
-              - --grpc-listener-address=/run/sockets/server.socket
-              - --grpc-authn-type=guest
-              - --tenancy-logic=empty
+              - name: server
+                imagePullPolicy: Always
+                command:
+                - /usr/local/bin/fulfillment-service
+                - start
+                - server
+                - --log-level=debug
+                - --log-headers=true
+                - --log-bodies=true
+                - "--db-url=postgres://client@fulfillment-database:5432/service?\
+                  sslmode=verify-full&\
+                  sslcert=/secrets/cert/tls.crt&\
+                  sslkey=/secrets/cert/tls.key&\
+                  sslrootcert=/secrets/cert/ca.crt"
+                - --grpc-listener-network=unix
+                - --grpc-listener-address=/run/sockets/server.socket
+                - --grpc-authn-type=guest
+                - --tenancy-logic=guest
+  - patch: |
+      apiVersion: apps/v1
+      kind: StatefulSet
+      metadata:
+        name: fulfillment-database
+      spec:
+        template:
+          spec:
+            initContainers:
+              - name: password-generator
+                image: quay.io/openshift/origin-cli:latest
+              - name: gateway
+                imagePullPolicy: Always
+  - patch: |
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: fulfillment-controller
+      spec:
+        template:
+          spec:
+            containers:
+              - name: controller
+                imagePullPolicy: Always
+  - patch: |
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: cloudkit-operator-controller-manager
+        namespace: innabox
+      spec:
+        template:
+          spec:
+            containers:
+              - name: manager
+                imagePullPolicy: Always

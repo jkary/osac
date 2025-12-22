@@ -13,6 +13,7 @@ patches:
       kind: Deployment
       metadata:
         name: cloudkit-operator-controller-manager
+        namespace: innabox
       spec:
         template:
           spec:
