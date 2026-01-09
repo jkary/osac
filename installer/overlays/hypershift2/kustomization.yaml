@@ -1,0 +1,56 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: innabox
+
+resources:
+  - ../../base
+  - externalsecrets
+
+patches:
+  - patch: |
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: cloudkit-operator-controller-manager
+        namespace: cloudkit-operator-system
+      spec:
+        template:
+          spec:
+            containers:
+            - name: manager
+              env:
+              - name: CLOUDKIT_CLUSTER_CREATE_WEBHOOK
+                value: http://innabox-eda-service:5000/create-hosted-cluster
+              - name: CLOUDKIT_CLUSTER_DELETE_WEBHOOK
+                value: http://innabox-eda-service:5000/delete-hosted-cluster
+              - name: CLOUDKIT_VM_CREATE_WEBHOOK
+                value: http://innabox-eda-service:5000/create-vm
+              - name: CLOUDKIT_VM_DELETE_WEBHOOK
+                value: http://innabox-eda-service:5000/delete-vm
+              - name: CLOUDKIT_MINIMUM_REQUEST_INTERVAL
+                value: "2m"
+              - name: CLOUDKIT_FULFILLMENT_SERVER_ADDRESS
+                value: fulfillment-api:8000
+
+secretGenerator:
+  - name: config-as-code-ig
+    options:
+      disableNameSuffixHash: true
+    literals:
+      - AAP_EE_IMAGE=ghcr.io/innabox/cloudkit-aap:latest
+
+configMapGenerator:
+  - name: publish-templates-ig
+    options:
+      disableNameSuffixHash: true
+    literals:
+      - CLOUDKIT_TEMPLATE_COLLECTIONS=cloudkit.templates,isaiahstapleton.ai_cluster_ansible
+
+images:
+  - name: ghcr.io/innabox/cloudkit-operator
+    digest: sha256:9b271b405219e6be4c61259b8ebfcb3b41a7fa58ecccd6ada93c10d046f510a8
+  - name: ghcr.io/innabox/fulfillment-service
+    newTag: v0.0.30
+  - name: ghcr.io/innabox/fulfillment-controller
+    newTag: v0.0.30
