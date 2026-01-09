@@ -1,0 +1,2 @@
+dns_ttl: 1800
+default_agent_namespace: "hardware-inventory"
