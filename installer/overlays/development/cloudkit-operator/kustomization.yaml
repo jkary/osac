@@ -1,0 +1,122 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+metadata:
+  name: cloudkit-operator-development
+
+# Development environment annotations
+commonAnnotations:
+  environment: development
+
+labels:
+  - includeSelectors: true
+    pairs:
+      environment: development
+      app.kubernetes.io/managed-by: kustomize
+
+resources:
+  - ../../../base/cloudkit-operator
+
+# secretGenerator:
+#   - name: quay-pull-secret
+#     type: kubernetes.io/dockerconfigjson
+#     files:
+#       - .dockerconfigjson=dockerconfig.json
+#     options:
+#       disableNameSuffixHash: true
+#     behavior: replace
+
+# images:
+#   - name: quay.io/innabox/cloudkit-operator
+#     newName: quay.io/rh-ee-jkary/cloudkit-operator
+#     newTag: latest
+
+patches:
+- patch: |-
+    - op: replace
+      path: /spec/replicas
+      value: 1
+    - op: replace
+      path: /spec/template/spec/containers/0/resources/limits/cpu
+      value: "200m"
+    - op: replace
+      path: /spec/template/spec/containers/0/resources/limits/memory
+      value: "256Mi"
+    - op: add
+      path: /spec/template/spec/containers/0/env/-
+      value:
+        name: LOG_LEVEL
+        value: debug
+    - op: add
+      path: /spec/template/spec/containers/0/env/-
+      value:
+        name: CLOUDKIT_FULFILLMENT_SERVER_ADDRESS
+        value: dev-fulfillment-api-foobar.apps.hcp.local.lab:443 
+    - op: add
+      path: /spec/template/spec/containers/0/env/-
+      value:
+        name: CLOUDKIT_CLUSTER_CREATE_WEBHOOK
+        value: https://dev-cloudkit-eda-foobar.apps.hcp.local.lab:443/api/private/v1/cluster-orders
+    - op: add
+      path: /spec/template/spec/containers/0/env/-
+      value:
+        name: CLOUDKIT_CLUSTER_DELETE_WEBHOOK
+        value: https://dev-cloudkit-eda-foobar.apps.hcp.local.lab:443/api/private/v1/cluster-orders
+    - op: add
+      path: /spec/template/spec/containers/0/args/-
+      value: "--grpc-insecure"
+    - op: add
+      path: /spec/template/spec/containers/0/env/-
+      value:
+        name: CLOUDKIT_FULFILLMENT_SERVICE_NAME
+        value: fulfillment.v1.Clusters
+    - op: add
+      path: /spec/template/spec/containers/0/env/-
+      value:
+        name: CLOUDKIT_FULFILLMENT_TOKEN_FILE
+        value: /var/run/secrets/kubernetes.io/serviceaccount/token
+  target:
+    kind: Deployment
+    name: controller-manager
+
+- patch: |-
+    - op: replace
+      path: /metadata/name
+      value: cloudkit-operator-dev
+  target:
+    kind: Namespace
+    name: cloudkit
+
+# Add HyperShift permissions to ClusterRole
+- patch: |-
+    - op: add
+      path: /rules/-
+      value:
+        apiGroups:
+        - hypershift.openshift.io
+        resources:
+        - hostedclusters
+        - nodepools
+        verbs:
+        - create
+        - delete
+        - get
+        - list
+        - patch
+        - update
+        - watch
+  target:
+    kind: ClusterRole
+    name: manager-role
+
+# Fix ClusterRoleBinding to use correct namespace and service account
+- patch: |-
+    - op: replace
+      path: /subjects/0/namespace
+      value: foobar
+    - op: replace
+      path: /subjects/0/name
+      value: dev-controller-manager
+  target:
+    kind: ClusterRoleBinding
+    name: manager-rolebinding 

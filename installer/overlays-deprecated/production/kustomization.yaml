@@ -1,0 +1,22 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+metadata:
+  name: cloudkit-production-unified
+
+# Production environment annotations
+commonAnnotations:
+  environment: production
+
+labels:
+- includeSelectors: true
+  pairs:
+    app.kubernetes.io/managed-by: kustomize
+    environment: production
+
+# Include base resources (cloudkit-aap, cloudkit-operator, shared)
+resources:
+- ../../base
+
+namespace: cloudkit
+namePrefix: prod-
