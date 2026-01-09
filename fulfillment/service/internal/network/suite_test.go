@@ -17,7 +17,7 @@ import (
 	"log/slog"
 	"testing"
 
-	"github.com/innabox/fulfillment-service/internal/logging"
+	"github.com/jkary/osac/fulfillment/service/internal/logging"
 	. "github.com/onsi/ginkgo/v2/dsl/core"
 	. "github.com/onsi/gomega"
 )

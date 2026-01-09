@@ -22,7 +22,7 @@
 package privatev1
 
 import (
-	v1 "github.com/innabox/cloudkit-operator/internal/api/shared/v1"
+	v1 "github.com/jkary/osac/openshift/operator/controllers/api/shared/v1"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	anypb "google.golang.org/protobuf/types/known/anypb"

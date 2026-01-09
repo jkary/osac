@@ -27,7 +27,7 @@ import (
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	cloudkitv1alpha1 "github.com/innabox/cloudkit-operator/api/v1alpha1"
+	cloudkitv1alpha1 "github.com/jkary/osac/openshift/operator/crds/v1alpha1"
 )
 
 var _ = Describe("VirtualMachine Controller", func() {

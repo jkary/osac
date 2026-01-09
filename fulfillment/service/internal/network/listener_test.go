@@ -30,7 +30,7 @@ import (
 	"github.com/spf13/pflag"
 	"golang.org/x/net/http2"
 
-	"github.com/innabox/fulfillment-service/internal/testing"
+	"github.com/jkary/osac/fulfillment/service/internal/testing"
 )
 
 var _ = Describe("Listener", func() {

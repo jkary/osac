@@ -24,7 +24,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/innabox/fulfillment-service/internal/logging"
+	"github.com/jkary/osac/fulfillment/service/internal/logging"
 )
 
 // ToolBuilder contains the data and logic needed to create an instance of the command line tool. Don't create instances

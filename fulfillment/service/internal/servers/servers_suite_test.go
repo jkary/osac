@@ -20,8 +20,8 @@ import (
 	. "github.com/onsi/ginkgo/v2/dsl/core"
 	. "github.com/onsi/gomega"
 
-	"github.com/innabox/fulfillment-service/internal/logging"
-	. "github.com/innabox/fulfillment-service/internal/testing"
+	"github.com/jkary/osac/fulfillment/service/internal/logging"
+	. "github.com/jkary/osac/fulfillment/service/internal/testing"
 )
 
 func TestServers(t *testing.T) {

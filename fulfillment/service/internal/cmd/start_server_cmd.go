@@ -30,16 +30,16 @@ import (
 	"k8s.io/klog/v2"
 	crlog "sigs.k8s.io/controller-runtime/pkg/log"
 
-	"github.com/innabox/fulfillment-service/internal"
-	eventsv1 "github.com/innabox/fulfillment-service/internal/api/events/v1"
-	ffv1 "github.com/innabox/fulfillment-service/internal/api/fulfillment/v1"
-	privatev1 "github.com/innabox/fulfillment-service/internal/api/private/v1"
-	"github.com/innabox/fulfillment-service/internal/auth"
-	"github.com/innabox/fulfillment-service/internal/database"
-	"github.com/innabox/fulfillment-service/internal/logging"
-	"github.com/innabox/fulfillment-service/internal/network"
-	"github.com/innabox/fulfillment-service/internal/recovery"
-	"github.com/innabox/fulfillment-service/internal/servers"
+	"github.com/jkary/osac/fulfillment/service/internal"
+	eventsv1 "github.com/jkary/osac/fulfillment/service/internal/api/events/v1"
+	ffv1 "github.com/jkary/osac/fulfillment/service/internal/api/fulfillment/v1"
+	privatev1 "github.com/jkary/osac/fulfillment/service/internal/api/private/v1"
+	"github.com/jkary/osac/fulfillment/service/internal/auth"
+	"github.com/jkary/osac/fulfillment/service/internal/database"
+	"github.com/jkary/osac/fulfillment/service/internal/logging"
+	"github.com/jkary/osac/fulfillment/service/internal/network"
+	"github.com/jkary/osac/fulfillment/service/internal/recovery"
+	"github.com/jkary/osac/fulfillment/service/internal/servers"
 )
 
 // NewStartServerCommand creates and returns the `start server` command.

@@ -18,9 +18,9 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/innabox/fulfillment-service/internal"
-	"github.com/innabox/fulfillment-service/internal/cmd"
-	"github.com/innabox/fulfillment-service/internal/exit"
+	"github.com/jkary/osac/fulfillment/service/internal"
+	"github.com/jkary/osac/fulfillment/service/internal/cmd"
+	"github.com/jkary/osac/fulfillment/service/internal/exit"
 )
 
 func main() {

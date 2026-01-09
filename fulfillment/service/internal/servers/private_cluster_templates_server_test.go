@@ -23,8 +23,8 @@ import (
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/fieldmaskpb"
 
-	privatev1 "github.com/innabox/fulfillment-service/internal/api/private/v1"
-	"github.com/innabox/fulfillment-service/internal/database"
+	privatev1 "github.com/jkary/osac/fulfillment/service/internal/api/private/v1"
+	"github.com/jkary/osac/fulfillment/service/internal/database"
 )
 
 var _ = Describe("Private cluster templates server", func() {

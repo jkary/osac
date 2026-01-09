@@ -23,7 +23,7 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 	clnt "sigs.k8s.io/controller-runtime/pkg/client"
 
-	privatev1 "github.com/innabox/fulfillment-service/internal/api/private/v1"
+	privatev1 "github.com/jkary/osac/fulfillment/service/internal/api/private/v1"
 )
 
 // HubClientCache contains the data and logic needed to build a cache of hub client.

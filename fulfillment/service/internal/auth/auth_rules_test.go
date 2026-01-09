@@ -20,7 +20,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/innabox/fulfillment-service/internal/jq"
+	"github.com/jkary/osac/fulfillment/service/internal/jq"
 	. "github.com/onsi/ginkgo/v2/dsl/core"
 	. "github.com/onsi/gomega"
 	"gopkg.in/yaml.v3"

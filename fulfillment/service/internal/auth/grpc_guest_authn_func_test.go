@@ -21,7 +21,7 @@ import (
 	. "github.com/onsi/gomega"
 	"google.golang.org/grpc/metadata"
 
-	. "github.com/innabox/fulfillment-service/internal/testing"
+	. "github.com/jkary/osac/fulfillment/service/internal/testing"
 )
 
 var _ = Describe("gRPC guest authentication function", func() {

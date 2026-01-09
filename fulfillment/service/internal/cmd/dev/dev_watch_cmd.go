@@ -26,10 +26,10 @@ import (
 	"github.com/spf13/pflag"
 	"google.golang.org/protobuf/proto"
 
-	"github.com/innabox/fulfillment-service/internal"
-	eventsv1 "github.com/innabox/fulfillment-service/internal/api/events/v1"
-	apiclient "github.com/innabox/fulfillment-service/internal/clients/api"
-	"github.com/innabox/fulfillment-service/internal/network"
+	"github.com/jkary/osac/fulfillment/service/internal"
+	eventsv1 "github.com/jkary/osac/fulfillment/service/internal/api/events/v1"
+	apiclient "github.com/jkary/osac/fulfillment/service/internal/clients/api"
+	"github.com/jkary/osac/fulfillment/service/internal/network"
 )
 
 // NewWatchCommand creates and returns the `listen` command.

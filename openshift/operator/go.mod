@@ -1,4 +1,4 @@
-module github.com/innabox/cloudkit-operator
+module github.com/jkary/osac/openshift/operator
 
 go 1.23.0
 

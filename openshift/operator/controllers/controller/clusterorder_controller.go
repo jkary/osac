@@ -38,7 +38,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
-	"github.com/innabox/cloudkit-operator/api/v1alpha1"
+	"github.com/jkary/osac/openshift/operator/crds/v1alpha1"
 )
 
 // NewComponentFn is the type of a function that creates a required component

@@ -28,9 +28,9 @@ import (
 	"go.uber.org/mock/gomock"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	testsv1 "github.com/innabox/fulfillment-service/internal/api/tests/v1"
-	"github.com/innabox/fulfillment-service/internal/auth"
-	"github.com/innabox/fulfillment-service/internal/database"
+	testsv1 "github.com/jkary/osac/fulfillment/service/internal/api/tests/v1"
+	"github.com/jkary/osac/fulfillment/service/internal/auth"
+	"github.com/jkary/osac/fulfillment/service/internal/database"
 )
 
 var _ = Describe("Generic DAO", func() {

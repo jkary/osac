@@ -11,7 +11,7 @@ import (
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/types/known/anypb"
 
-	privatev1 "github.com/innabox/fulfillment-service/internal/api/private/v1"
+	privatev1 "github.com/jkary/osac/fulfillment/service/internal/api/private/v1"
 )
 
 // TemplateParameterDefinition represents a common interface for template parameter definitions

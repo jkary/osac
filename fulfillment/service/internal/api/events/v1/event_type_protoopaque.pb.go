@@ -22,7 +22,7 @@
 package eventsv1
 
 import (
-	v1 "github.com/innabox/fulfillment-service/internal/api/fulfillment/v1"
+	v1 "github.com/jkary/osac/fulfillment/service/internal/api/fulfillment/v1"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"

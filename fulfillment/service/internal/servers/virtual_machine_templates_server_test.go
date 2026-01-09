@@ -23,8 +23,8 @@ import (
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/fieldmaskpb"
 
-	ffv1 "github.com/innabox/fulfillment-service/internal/api/fulfillment/v1"
-	"github.com/innabox/fulfillment-service/internal/database"
+	ffv1 "github.com/jkary/osac/fulfillment/service/internal/api/fulfillment/v1"
+	"github.com/jkary/osac/fulfillment/service/internal/database"
 )
 
 var _ = Describe("Virtual machine templates server", func() {

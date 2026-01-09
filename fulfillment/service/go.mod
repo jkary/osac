@@ -1,4 +1,4 @@
-module github.com/innabox/fulfillment-service
+module github.com/jkary/osac/fulfillment/service
 
 go 1.24.4
 

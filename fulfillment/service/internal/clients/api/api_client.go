@@ -19,10 +19,10 @@ import (
 	"fmt"
 	"log/slog"
 
-	eventsv1 "github.com/innabox/fulfillment-service/internal/api/events/v1"
-	api "github.com/innabox/fulfillment-service/internal/api/fulfillment/v1"
-	privatev1 "github.com/innabox/fulfillment-service/internal/api/private/v1"
-	"github.com/innabox/fulfillment-service/internal/network"
+	eventsv1 "github.com/jkary/osac/fulfillment/service/internal/api/events/v1"
+	api "github.com/jkary/osac/fulfillment/service/internal/api/fulfillment/v1"
+	privatev1 "github.com/jkary/osac/fulfillment/service/internal/api/private/v1"
+	"github.com/jkary/osac/fulfillment/service/internal/network"
 	"github.com/spf13/pflag"
 	"google.golang.org/grpc"
 )

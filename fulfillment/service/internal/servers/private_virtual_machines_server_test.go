@@ -25,9 +25,9 @@ import (
 	"google.golang.org/protobuf/types/known/fieldmaskpb"
 	"google.golang.org/protobuf/types/known/wrapperspb"
 
-	privatev1 "github.com/innabox/fulfillment-service/internal/api/private/v1"
-	"github.com/innabox/fulfillment-service/internal/database"
-	"github.com/innabox/fulfillment-service/internal/database/dao"
+	privatev1 "github.com/jkary/osac/fulfillment/service/internal/api/private/v1"
+	"github.com/jkary/osac/fulfillment/service/internal/database"
+	"github.com/jkary/osac/fulfillment/service/internal/database/dao"
 )
 
 var _ = Describe("Private virtual machines server", func() {

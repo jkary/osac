@@ -25,7 +25,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	ctrllog "sigs.k8s.io/controller-runtime/pkg/log"
 
-	"github.com/innabox/cloudkit-operator/api/v1alpha1"
+	"github.com/jkary/osac/openshift/operator/crds/v1alpha1"
 )
 
 func (r *VirtualMachineReconciler) newNamespace(ctx context.Context, instance *v1alpha1.VirtualMachine) (*appResource, error) {

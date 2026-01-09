@@ -1,0 +1,88 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'fulfillment/**'
+      - 'openshift/**'
+      - 'cloudkit-aap/**'
+      - 'templates/**'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'fulfillment/**'
+      - 'openshift/**'
+      - 'cloudkit-aap/**'
+      - 'templates/**'
+
+jobs:
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      fulfillment: ${{ steps.changes.outputs.fulfillment }}
+      operator: ${{ steps.changes.outputs.operator }}
+      aap: ${{ steps.changes.outputs.aap }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v2
+        id: changes
+        with:
+          filters: |
+            fulfillment:
+              - 'fulfillment/**'
+            operator:
+              - 'openshift/operator/**'
+            aap:
+              - 'cloudkit-aap/**'
+              - 'templates/**'
+
+  fulfillment:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.fulfillment == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.24'
+      - name: Run tests
+        run: cd fulfillment/service && go test ./...
+      - name: Run linter
+        uses: golangci/golangci-lint-action@v4
+        with:
+          working-directory: fulfillment/service
+
+  operator:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.operator == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.23'
+      - name: Run tests
+        run: cd openshift/operator && go test ./...
+      - name: Run linter
+        uses: golangci/golangci-lint-action@v4
+        with:
+          working-directory: openshift/operator
+
+  aap:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.aap == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Install dependencies
+        run: |
+          pip install uv
+          cd cloudkit-aap && uv sync
+      - name: Run ansible-lint
+        run: |
+          cd cloudkit-aap
+          uv run ansible-lint

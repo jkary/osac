@@ -18,9 +18,9 @@ import (
 	"errors"
 	"log/slog"
 
-	privatev1 "github.com/innabox/fulfillment-service/internal/api/private/v1"
-	"github.com/innabox/fulfillment-service/internal/auth"
-	"github.com/innabox/fulfillment-service/internal/database"
+	privatev1 "github.com/jkary/osac/fulfillment/service/internal/api/private/v1"
+	"github.com/jkary/osac/fulfillment/service/internal/auth"
+	"github.com/jkary/osac/fulfillment/service/internal/database"
 )
 
 type PrivateHubsServerBuilder struct {

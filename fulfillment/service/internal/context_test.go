@@ -22,7 +22,7 @@ import (
 	. "github.com/onsi/ginkgo/v2/dsl/core"
 	. "github.com/onsi/gomega"
 
-	"github.com/innabox/fulfillment-service/internal/logging"
+	"github.com/jkary/osac/fulfillment/service/internal/logging"
 )
 
 var _ = Describe("Context", func() {

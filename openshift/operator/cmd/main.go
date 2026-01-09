@@ -47,8 +47,8 @@ import (
 	metricsserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 
-	v1alpha1 "github.com/innabox/cloudkit-operator/api/v1alpha1"
-	"github.com/innabox/cloudkit-operator/internal/controller"
+	v1alpha1 "github.com/jkary/osac/openshift/operator/crds/v1alpha1"
+	"github.com/jkary/osac/openshift/operator/controllers/controller"
 	// +kubebuilder:scaffold:imports
 )
 

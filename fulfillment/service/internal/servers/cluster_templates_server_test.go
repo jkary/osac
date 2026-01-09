@@ -22,8 +22,8 @@ import (
 	. "github.com/onsi/gomega"
 	"google.golang.org/protobuf/proto"
 
-	ffv1 "github.com/innabox/fulfillment-service/internal/api/fulfillment/v1"
-	"github.com/innabox/fulfillment-service/internal/database"
+	ffv1 "github.com/jkary/osac/fulfillment/service/internal/api/fulfillment/v1"
+	"github.com/jkary/osac/fulfillment/service/internal/database"
 )
 
 var _ = Describe("Cluster templates server", func() {

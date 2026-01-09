@@ -30,9 +30,9 @@ import (
 	"google.golang.org/protobuf/reflect/protoreflect"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	"github.com/innabox/fulfillment-service/internal/auth"
-	"github.com/innabox/fulfillment-service/internal/database"
-	"github.com/innabox/fulfillment-service/internal/json"
+	"github.com/jkary/osac/fulfillment/service/internal/auth"
+	"github.com/jkary/osac/fulfillment/service/internal/database"
+	"github.com/jkary/osac/fulfillment/service/internal/json"
 )
 
 // Object is the interface that should be satisfied by objects to be managed by the generic DAO.

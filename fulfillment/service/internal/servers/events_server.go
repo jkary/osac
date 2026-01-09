@@ -32,10 +32,10 @@ import (
 	"google.golang.org/protobuf/reflect/protoreflect"
 	"google.golang.org/protobuf/reflect/protoregistry"
 
-	eventsv1 "github.com/innabox/fulfillment-service/internal/api/events/v1"
-	privatev1 "github.com/innabox/fulfillment-service/internal/api/private/v1"
-	"github.com/innabox/fulfillment-service/internal/auth"
-	"github.com/innabox/fulfillment-service/internal/database"
+	eventsv1 "github.com/jkary/osac/fulfillment/service/internal/api/events/v1"
+	privatev1 "github.com/jkary/osac/fulfillment/service/internal/api/private/v1"
+	"github.com/jkary/osac/fulfillment/service/internal/auth"
+	"github.com/jkary/osac/fulfillment/service/internal/database"
 )
 
 type EventsServerBuilder struct {

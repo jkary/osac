@@ -33,7 +33,7 @@ import (
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
-	cloudkitv1alpha1 "github.com/innabox/cloudkit-operator/api/v1alpha1"
+	cloudkitv1alpha1 "github.com/jkary/osac/openshift/operator/crds/v1alpha1"
 	// +kubebuilder:scaffold:imports
 )
 

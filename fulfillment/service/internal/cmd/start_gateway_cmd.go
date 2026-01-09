@@ -24,9 +24,9 @@ import (
 	"golang.org/x/net/http2"
 	"golang.org/x/net/http2/h2c"
 
-	"github.com/innabox/fulfillment-service/internal"
-	api "github.com/innabox/fulfillment-service/internal/api/fulfillment/v1"
-	"github.com/innabox/fulfillment-service/internal/network"
+	"github.com/jkary/osac/fulfillment/service/internal"
+	api "github.com/jkary/osac/fulfillment/service/internal/api/fulfillment/v1"
+	"github.com/jkary/osac/fulfillment/service/internal/network"
 	"google.golang.org/protobuf/encoding/protojson"
 )
 

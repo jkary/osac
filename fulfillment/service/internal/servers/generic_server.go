@@ -29,11 +29,11 @@ import (
 	"google.golang.org/protobuf/reflect/protoregistry"
 	"google.golang.org/protobuf/types/known/fieldmaskpb"
 
-	privatev1 "github.com/innabox/fulfillment-service/internal/api/private/v1"
-	"github.com/innabox/fulfillment-service/internal/auth"
-	"github.com/innabox/fulfillment-service/internal/database"
-	"github.com/innabox/fulfillment-service/internal/database/dao"
-	"github.com/innabox/fulfillment-service/internal/masks"
+	privatev1 "github.com/jkary/osac/fulfillment/service/internal/api/private/v1"
+	"github.com/jkary/osac/fulfillment/service/internal/auth"
+	"github.com/jkary/osac/fulfillment/service/internal/database"
+	"github.com/jkary/osac/fulfillment/service/internal/database/dao"
+	"github.com/jkary/osac/fulfillment/service/internal/masks"
 )
 
 // GenericServerBuilder contains the data and logic needed to create new generic servers.

@@ -29,12 +29,12 @@ import (
 	"k8s.io/klog/v2"
 	crlog "sigs.k8s.io/controller-runtime/pkg/log"
 
-	"github.com/innabox/fulfillment-service/internal"
-	privatev1 "github.com/innabox/fulfillment-service/internal/api/private/v1"
-	"github.com/innabox/fulfillment-service/internal/controllers"
-	"github.com/innabox/fulfillment-service/internal/controllers/cluster"
-	"github.com/innabox/fulfillment-service/internal/controllers/vm"
-	"github.com/innabox/fulfillment-service/internal/network"
+	"github.com/jkary/osac/fulfillment/service/internal"
+	privatev1 "github.com/jkary/osac/fulfillment/service/internal/api/private/v1"
+	"github.com/jkary/osac/fulfillment/service/internal/controllers"
+	"github.com/jkary/osac/fulfillment/service/internal/controllers/cluster"
+	"github.com/jkary/osac/fulfillment/service/internal/controllers/vm"
+	"github.com/jkary/osac/fulfillment/service/internal/network"
 	"google.golang.org/grpc"
 )
 
