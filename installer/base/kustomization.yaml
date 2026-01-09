@@ -7,8 +7,8 @@ metadata:
 
 resources:
   - cloudkit-aap
-  - osac-operator/config/default
-  - osac-fulfillment-service/manifests/overlays/openshift
+  - ../../openshift/operator/config/default
+  - ../../fulfillment/service/manifests/overlays/openshift
   - hub-access
 
 # Common labels for all CloudKit components
